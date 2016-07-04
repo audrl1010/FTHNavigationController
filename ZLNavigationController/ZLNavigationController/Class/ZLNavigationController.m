@@ -53,9 +53,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     self.transitionMaskView.hidden = YES;
     [self.view addSubview:self.transitionMaskView];
     
-    
     UIViewController *rootViewController = self.viewControllerStack[0];
-    
     [rootViewController willMoveToParentViewController:self];
     [self addChildViewController:rootViewController];
     
@@ -67,12 +65,6 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     [rootViewController didMoveToParentViewController:self];
     [self addNavigationBarIfNeededByViewController:rootViewController];
 }
-
-- (void)viewDidLoad {
-    [super viewDidLoad];
-}
-
-
 
 #pragma mark Push & Pop Method
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated {
@@ -90,19 +82,14 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     toView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self.view addSubview:toView];
     
-    if (animated) {
-        [self addShadowLayerBy:viewController];
-        
-        [self startPushAnimationWithToViewController:viewController withCompletion:^{
-            [self.currentDisplayViewController.view removeFromSuperview];
-            [viewController didMoveToParentViewController:self];
-            self.currentDisplayViewController = viewController;
-        }];
-    }else{
+    CALayer *shadowLayer = [self addShadowLayerIn:viewController];
+    [self startPushAnimationWithToViewController:viewController animated:animated withCompletion:^{
+        [shadowLayer removeFromSuperlayer];
         [self.currentDisplayViewController.view removeFromSuperview];
         [viewController didMoveToParentViewController:self];
         self.currentDisplayViewController = viewController;
-    }
+    }];
+    
 }
 
 - (void)popViewControllerAnimated:(BOOL)animated {
@@ -112,21 +99,16 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     UIViewController *viewController = [self previousViewController];
     [self.view insertSubview:viewController.view belowSubview:self.transitionMaskView];
     
-    if (animated) {
-         [self addShadowLayerBy:self.currentDisplayViewController];
-        [self startPopAnimationWithFromViewController:self.currentDisplayViewController withCompletion:^{
-            [self.currentDisplayViewController.view removeFromSuperview];
-            [self.currentDisplayViewController removeFromParentViewController];
-            self.currentDisplayViewController = viewController;
-            [self.viewControllerStack removeLastObject];
-            self.transitionMaskView.hidden = YES;
-        }];
-    }else {
+    CALayer *shadowLayer = [self addShadowLayerIn:self.currentDisplayViewController];
+    
+    [self startPopAnimationWithFromViewController:self.currentDisplayViewController animated:animated withCompletion:^{
+        [shadowLayer removeFromSuperlayer];
         [self.currentDisplayViewController.view removeFromSuperview];
         [self.currentDisplayViewController removeFromParentViewController];
         self.currentDisplayViewController = viewController;
         [self.viewControllerStack removeLastObject];
-    }
+        self.transitionMaskView.hidden = YES;
+    }];
 }
 
 #pragma mark - Animation
@@ -142,7 +124,12 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     }
 }
 
-- (void)startPushAnimationWithToViewController:(UIViewController *)toViewController withCompletion:(void(^)())callback {
+- (void)startPushAnimationWithToViewController:(UIViewController *)toViewController animated:(BOOL)animted withCompletion:(void(^)())callback {
+    if (!animted) {
+        callback();
+        callback = nil;
+        return;
+    }
     CABasicAnimation *toAnimation = [CABasicAnimation animationWithKeyPath:@"position.x"];
     toAnimation.fromValue = @(CGRectGetWidth(self.view.frame)*1.5);
     toAnimation.toValue = @(CGRectGetWidth(self.view.frame)*0.5);
@@ -170,7 +157,12 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     [self.transitionMaskView.layer addAnimation:maskAnimation forKey:@"zhoulee.transition.opacity"];
 }
 
-- (void)startPopAnimationWithFromViewController:(UIViewController *)fromViewController withCompletion:(void(^)())callback {
+- (void)startPopAnimationWithFromViewController:(UIViewController *)fromViewController animated:(BOOL)animted withCompletion:(void(^)())callback {
+    if (!animted) {
+        callback();
+        callback = nil;
+        return;
+    }
     CABasicAnimation *fromAnimation = [CABasicAnimation animationWithKeyPath:@"position.x"];
     fromAnimation.fromValue = @(CGRectGetWidth(self.view.frame)*0.5);
     fromAnimation.toValue = @(CGRectGetWidth(self.view.frame) * 1.5);
@@ -229,7 +221,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     }
 }
 
-- (CALayer *)addShadowLayerBy:(UIViewController *)viewController {
+- (CALayer *)addShadowLayerIn:(UIViewController *)viewController {
     CALayer *shadowLayer = [CALayer layer];
     shadowLayer.backgroundColor = [UIColor whiteColor].CGColor;
     shadowLayer.frame = CGRectMake(0, 0, 1, CGRectGetHeight(viewController.view.frame));
