@@ -7,7 +7,8 @@
 //
 
 #import "AppDelegate.h"
-
+#import "ZLNavigationController.h"
+#import "ViewController.h"
 @interface AppDelegate ()
 
 @end
@@ -16,7 +17,11 @@
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    // Override point for customization after application launch.
+    UIViewController *vc = [[ViewController alloc] init];
+    ZLNavigationController *navigation = [[ZLNavigationController alloc] initWithRootViewController:vc];
+    self.window.rootViewController = navigation;
+    [self.window makeKeyAndVisible];
+    
     return YES;
 }
 
