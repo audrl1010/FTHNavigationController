@@ -60,6 +60,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     
     self.transitionMaskView = [[UIView alloc] initWithFrame:self.view.bounds];
     self.transitionMaskView.backgroundColor = [UIColor blackColor];
+    self.transitionMaskView.alpha = 0;
     self.transitionMaskView.hidden = YES;
     [self.view addSubview:self.transitionMaskView];
     
@@ -95,6 +96,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     CALayer *shadowLayer = [self addShadowLayerIn:viewController];
     [self startPushAnimationWithToViewController:viewController animated:animated withCompletion:^{
         [shadowLayer removeFromSuperlayer];
+        [viewController.view.layer removeAnimationForKey:@"zhoulee.transition.to"];
         [self.currentDisplayViewController.view removeFromSuperview];
         [viewController didMoveToParentViewController:self];
         self.currentDisplayViewController = viewController;
@@ -114,6 +116,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     
     [self startPopAnimationWithFromViewController:self.currentDisplayViewController animated:animated withCompletion:^{
         [shadowLayer removeFromSuperlayer];
+        [self.currentDisplayViewController.view.layer removeAnimationForKey:@"zhoulee.transition.from"];
         [self.currentDisplayViewController.view removeFromSuperview];
         [self.currentDisplayViewController removeFromParentViewController];
         self.currentDisplayViewController = viewController;
@@ -147,8 +150,8 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     toAnimation.fromValue = @(CGRectGetWidth(self.view.frame)*1.5);
     toAnimation.toValue = @(CGRectGetWidth(self.view.frame)*0.5);
     toAnimation.duration = [self transitionDuration];
-    toAnimation.fillMode = kCAFillModeRemoved;
-    toAnimation.removedOnCompletion = YES;
+    toAnimation.fillMode = kCAFillModeBoth;
+    toAnimation.removedOnCompletion = NO;
     toAnimation.delegate = self;
     [toAnimation setValue:callback forKeyPath:@"callback"];
     [toViewController.view.layer addAnimation:toAnimation forKey:@"zhoulee.transition.to"];
@@ -162,9 +165,9 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     [self.currentDisplayViewController.view.layer addAnimation:fromAnimation forKey:@"zhoulee.transition.from"];
     
     CABasicAnimation *maskAnimation = [CABasicAnimation animationWithKeyPath:@"opacity"];
-    maskAnimation.fromValue = @(.1f);
-    maskAnimation.toValue = @(.4f);
-    maskAnimation.fillMode = kCAFillModeBoth;
+    maskAnimation.fromValue = @(0);
+    maskAnimation.toValue = @(0);
+    maskAnimation.fillMode = kCAFillModeRemoved;
     maskAnimation.duration = [self transitionDuration];
     maskAnimation.removedOnCompletion = YES;
     [self.transitionMaskView.layer addAnimation:maskAnimation forKey:@"zhoulee.transition.opacity"];
@@ -180,8 +183,8 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     fromAnimation.fromValue = @(CGRectGetWidth(self.view.frame)*0.5);
     fromAnimation.toValue = @(CGRectGetWidth(self.view.frame) * 1.5);
     fromAnimation.duration = [self transitionDuration];
-    fromAnimation.fillMode = kCAFillModeRemoved;
-    fromAnimation.removedOnCompletion = YES;
+    fromAnimation.fillMode = kCAFillModeBoth;
+    fromAnimation.removedOnCompletion = NO;
     fromAnimation.delegate = self;
     [fromAnimation setValue:callback forKeyPath:@"callback"];
     [fromViewController.view.layer addAnimation:fromAnimation forKey:@"zhoulee.transition.from"];
@@ -196,8 +199,8 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     
     CABasicAnimation *maskAnimation = [CABasicAnimation animationWithKeyPath:@"opacity"];
     maskAnimation.fromValue = @(.4f);
-    maskAnimation.toValue = @(.1f);
-    maskAnimation.fillMode = kCAFillModeBoth;
+    maskAnimation.toValue = @(0);
+    maskAnimation.fillMode = kCAFillModeRemoved;
     maskAnimation.duration = [self transitionDuration];
     maskAnimation.removedOnCompletion = YES;
     [self.transitionMaskView.layer addAnimation:maskAnimation forKey:@"zhoulee.transition.opacity"];
