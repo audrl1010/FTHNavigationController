@@ -341,7 +341,12 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
 @implementation UIViewController (ZLNavigationItem)
 
 - (UINavigationItem *)zl_navigationItem {
-    return objc_getAssociatedObject(self, _cmd);
+    UINavigationItem *item = objc_getAssociatedObject(self, _cmd);
+    if (!item) {
+        item = [[UINavigationItem alloc] initWithTitle:self.title?:@""];
+        objc_setAssociatedObject(self, @selector(zl_navigationItem), item, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    }
+    return item;
 }
 
 - (void)setZl_navigationItem:(UINavigationItem *)zl_navigationItem {
