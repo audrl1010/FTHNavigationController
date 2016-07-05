@@ -11,6 +11,7 @@
 @interface ZLNavigationController : UIViewController
 @property (nonatomic, strong, readonly) NSArray *viewControllers;
 
+@property (nonatomic, strong, readonly) UIPanGestureRecognizer *interactiveGestureRecognizer;
 
 - (instancetype)initWithRootViewController:(UIViewController *)rootViewController;
 
@@ -35,6 +36,11 @@
 @property (nonatomic, weak) UINavigationItem *zl_navigationItem;
 @end
 
+@interface ZLPercentDrivenInteractiveTransition : NSObject
+- (void)startInteractiveTransition;
 
+- (void)updateInteractiveTransition:(CGFloat)percentComplete;
 
+- (void)finishInteractiveTransition:(CGFloat)percentComplete;
+@end
 

@@ -40,6 +40,11 @@
         
         [self.view addSubview:button];
     }
+    {
+        UIView *view = [[UIView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.view.bounds), 100)];
+        view.backgroundColor = [UIColor colorWithRed:arc4random_uniform(255)/255.0 green:arc4random_uniform(255)/255.0 blue:arc4random_uniform(255)/255.0 alpha:1];
+        [self.view addSubview:view];
+    }
 }
 
 - (void)pushAction {
