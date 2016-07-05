@@ -101,7 +101,6 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     
     [self startPushAnimationWithToViewController:viewController animated:animated withCompletion:^{
         [shadowLayer removeFromSuperlayer];
-        [viewController.view.layer removeAnimationForKey:@"zhoulee.transition.to"];
         [self.currentDisplayViewController.view removeFromSuperview];
         self.currentDisplayViewController = viewController;
     }];
@@ -120,7 +119,6 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     
     [self startPopAnimationWithFromViewController:self.currentDisplayViewController animated:animated withCompletion:^{
         [shadowLayer removeFromSuperlayer];
-        [self.currentDisplayViewController.view.layer removeAnimationForKey:@"zhoulee.transition.from"];
         [self.currentDisplayViewController.view removeFromSuperview];
         [self.currentDisplayViewController removeFromParentViewController];
         self.currentDisplayViewController = viewController;
@@ -216,9 +214,6 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     UINavigationBar *navigationBar = viewController.zl_navigationBar;
     navigationBar.translucent = YES;
     UINavigationItem *barItem = [[UINavigationItem alloc] initWithTitle:viewController.title?:@""];
-
-    NSAssert(!(viewController.zl_navigationItem.leftBarButtonItem && viewController.zl_navigationItem.leftBarButtonItems), @"both of leftItems and leftItem is set");
-    NSAssert(!(viewController.zl_navigationItem.rightBarButtonItem && viewController.zl_navigationItem.rightBarButtonItems), @"both of rightItems and rightItem is set");
     
     barItem.leftBarButtonItem = viewController.zl_navigationItem.leftBarButtonItem;
     barItem.leftBarButtonItems = viewController.zl_navigationItem.leftBarButtonItems;
