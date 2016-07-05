@@ -21,6 +21,9 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.title = [NSString stringWithFormat:@"TEST %d",self.index];
+    
+
+    
     self.view.backgroundColor = [UIColor whiteColor];
     {
         UIButton *button = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
@@ -40,11 +43,12 @@
         
         [self.view addSubview:button];
     }
-    {
-        UIView *view = [[UIView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.view.bounds), 100)];
-        view.backgroundColor = [UIColor colorWithRed:arc4random_uniform(255)/255.0 green:arc4random_uniform(255)/255.0 blue:arc4random_uniform(255)/255.0 alpha:1];
-        [self.view addSubview:view];
-    }
+//    {
+//        UIView *view = [[UIView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.view.bounds), 100)];
+//        view.backgroundColor = [UIColor colorWithRed:arc4random_uniform(255)/255.0 green:arc4random_uniform(255)/255.0 blue:arc4random_uniform(255)/255.0 alpha:1];
+//        [self.view addSubview:view];
+//    }
+        [self.zl_navigationBar setBarTintColor:[UIColor colorWithRed:arc4random_uniform(255)/255.0 green:arc4random_uniform(255)/255.0 blue:arc4random_uniform(255)/255.0 alpha:1]];
 }
 
 - (void)pushAction {

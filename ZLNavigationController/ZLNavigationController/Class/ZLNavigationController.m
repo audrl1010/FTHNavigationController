@@ -65,8 +65,10 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     [self.view addSubview:self.transitionMaskView];
     
     UIViewController *rootViewController = self.viewControllerStack[0];
+    
     [rootViewController willMoveToParentViewController:self];
     [self addChildViewController:rootViewController];
+    
     
     UIView *rootView = rootViewController.view;
     rootView.backgroundColor = [UIColor whiteColor];
@@ -85,7 +87,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     self.transitionMaskView.hidden = NO;
     
     [self.viewControllerStack addObject:viewController];
-    [self addNavigationBarIfNeededByViewController:viewController];
+    
     [viewController willMoveToParentViewController:self];
     [self addChildViewController:viewController];
     
@@ -93,12 +95,14 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     toView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self.view addSubview:toView];
     
+    [viewController didMoveToParentViewController:self];
+    [self addNavigationBarIfNeededByViewController:viewController];
     CALayer *shadowLayer = [self addShadowLayerIn:viewController];
+    
     [self startPushAnimationWithToViewController:viewController animated:animated withCompletion:^{
         [shadowLayer removeFromSuperlayer];
         [viewController.view.layer removeAnimationForKey:@"zhoulee.transition.to"];
         [self.currentDisplayViewController.view removeFromSuperview];
-        [viewController didMoveToParentViewController:self];
         self.currentDisplayViewController = viewController;
     }];
 }
@@ -209,13 +213,10 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
 #pragma mark - Privite Method
 - (void)addNavigationBarIfNeededByViewController:(UIViewController *)viewController {
     if (viewController.zl_navigationBarHidden) return;
-    UINavigationBar *navigationBar = [[UINavigationBar alloc] initWithFrame:
-                                      CGRectMake(0, 0, CGRectGetWidth(viewController.view.frame), kZLNavigationBarHeight)];
-    viewController.zl_navigationBar = navigationBar;
+    UINavigationBar *navigationBar = viewController.zl_navigationBar;
     navigationBar.translucent = YES;
-    
     UINavigationItem *barItem = [[UINavigationItem alloc] initWithTitle:viewController.title?:@""];
-    
+
     NSAssert(!(viewController.zl_navigationItem.leftBarButtonItem && viewController.zl_navigationItem.leftBarButtonItems), @"both of leftItems and leftItem is set");
     NSAssert(!(viewController.zl_navigationItem.rightBarButtonItem && viewController.zl_navigationItem.rightBarButtonItems), @"both of rightItems and rightItem is set");
     
@@ -320,9 +321,15 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
 @end
 
 @implementation UIViewController(ZLNavigationBar)
-
-- (UINavigationItem *)zl_navigationBar {
-    return objc_getAssociatedObject(self, _cmd);
+- (UINavigationBar *)zl_navigationBar {
+    UINavigationBar *navigationBar = objc_getAssociatedObject(self, _cmd);
+    if (!navigationBar) {
+        navigationBar = [[UINavigationBar alloc] initWithFrame:
+                             CGRectMake(0, 0, CGRectGetWidth(self.view.frame), kZLNavigationBarHeight)];
+            
+        [self setZl_navigationBar:navigationBar];
+    }
+    return navigationBar;
 }
 
 - (void)setZl_navigationBar:(UINavigationBar *)zl_navigationBar {
