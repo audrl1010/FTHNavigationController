@@ -29,11 +29,11 @@
 @end
 
 @interface UIViewController(ZLNavigationBar)
-@property (nonatomic, strong) UINavigationBar *zl_navigationBar;
+@property (nonatomic, weak) UINavigationBar *zl_navigationBar;
 @end
 
 @interface UIViewController(ZLNavigationItem)
-@property (nonatomic, strong) UINavigationItem *zl_navigationItem;
+@property (nonatomic, weak) UINavigationItem *zl_navigationItem;
 @end
 
 @interface ZLPercentDrivenInteractiveTransition : NSObject

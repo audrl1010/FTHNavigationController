@@ -326,8 +326,8 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     if (!navigationBar) {
         navigationBar = [[UINavigationBar alloc] initWithFrame:
                              CGRectMake(0, 0, CGRectGetWidth(self.view.frame), kZLNavigationBarHeight)];
-            
-        [self setZl_navigationBar:navigationBar];
+        navigationBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        objc_setAssociatedObject(self, @selector(zl_navigationBar), navigationBar, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
     return navigationBar;
 }
