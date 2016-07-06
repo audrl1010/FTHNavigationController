@@ -11,7 +11,7 @@
 #import <objc/runtime.h>
 
 static CGFloat kZLNavigationBarHeight = 64.0f;
-static CGFloat kZLNavigationControllerPushPopTransitionDuration = 4.375f;
+static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
 
 @interface ZLNavigationController()<UIGestureRecognizerDelegate,ZLViewControllerAnimatedTransitioning,ZLViewControllerContextTransitioning> {
     BOOL _isAnimationInProgress;
@@ -147,26 +147,24 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = 4.375f;
 }
 
 - (void)pushAnimation:(BOOL)animated withFromViewController:(UIViewController *)fromViewController andToViewController:(UIViewController *)toViewController {
-    CALayer *shadowLayer = [self addShadowLayerIn:toViewController];
+    [self addShadowLayerIn:toViewController];
     
     [self startPushAnimationWithFromViewController:fromViewController
                                   toViewController:toViewController
                                           animated:animated
                                     withCompletion:^{
-                                        [shadowLayer removeFromSuperlayer];
                                         [self.currentDisplayViewController.view removeFromSuperview];
                                         self.currentDisplayViewController = toViewController;
                                     }];
 }
 
 - (void)popAnimation:(BOOL)animated withFromViewController:(UIViewController *)fromViewController andToViewController:(UIViewController *)toViewController {
-    CALayer *shadowLayer = [self addShadowLayerIn:self.currentDisplayViewController];
+    [self addShadowLayerIn:self.currentDisplayViewController];
     
     [self startPopAnimationWithFromViewController:fromViewController
                                  toViewController:toViewController
                                          animated:animated
                                    withCompletion:^{
-                                       [shadowLayer removeFromSuperlayer];
                                        [self.currentDisplayViewController.view removeFromSuperview];
                                        [self.currentDisplayViewController removeFromParentViewController];
                                        self.currentDisplayViewController = toViewController;
@@ -185,6 +183,8 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = 4.375f;
             callback();
             callback = nil;
         }
+    }else {
+        
     }
 }
 
@@ -305,17 +305,15 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = 4.375f;
     [self.viewControllerStack removeObjectsInRange:NSMakeRange(index+1, self.viewControllerStack.count-index-1)];
 }
 
-- (CALayer *)addShadowLayerIn:(UIViewController *)viewController {
-    CALayer *shadowLayer = [CALayer layer];
-    shadowLayer.backgroundColor = [UIColor clearColor].CGColor;
-    shadowLayer.frame = CGRectMake(0, 0, 0.5, CGRectGetHeight(viewController.view.frame));
+- (void )addShadowLayerIn:(UIViewController *)viewController {
+    CALayer *shadowLayer = viewController.view.layer;
+//    shadowLayer.backgroundColor = [UIColor clearColor].CGColor;
+//    shadowLayer.frame = CGRectMake(0, 0, 0.5, CGRectGetHeight(viewController.view.frame));
     shadowLayer.shadowOffset = CGSizeMake(-3, 0);
     shadowLayer.shadowRadius = 2.0;
     shadowLayer.shadowColor = [UIColor blackColor].CGColor;
-    shadowLayer.shadowOpacity = 0.5;
-    shadowLayer.shadowPath = [UIBezierPath bezierPathWithRect:shadowLayer.frame].CGPath;
-    [viewController.view.layer insertSublayer:shadowLayer atIndex:0];
-    return shadowLayer;
+    shadowLayer.shadowOpacity = 0.1;
+    shadowLayer.shadowPath = [UIBezierPath bezierPathWithRect:viewController.view.bounds].CGPath;
 }
 
 
