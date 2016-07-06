@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface ZLNavigationController : UIViewController
+@interface ZLNavigationController : UIViewController 
 @property (nonatomic, strong, readonly) NSArray *viewControllers;
 
 @property (nonatomic, strong, readonly) UIPanGestureRecognizer *interactiveGestureRecognizer;
@@ -18,13 +18,27 @@
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated;
 
 - (void)popViewControllerAnimated:(BOOL)animated;
-
 - (void)popToViewController:(UIViewController *)viewController animated:(BOOL)animated;
-
 - (void)popToRootViewControllerAnimated:(BOOL)animated;
 @end
 
+@protocol ZLViewControllerAnimatedTransitioning <NSObject>
+@required
+- (CGFloat)transitionDuration;
 
+- (void)pushAnimation:(BOOL)animated withFromViewController:(UIViewController *)fromViewController andToViewController:(UIViewController *)toViewController;
+
+- (void)popAnimation:(BOOL)animated withFromViewController:(UIViewController *)fromViewController andToViewController:(UIViewController *)toViewController;
+@end
+
+@protocol ZLViewControllerContextTransitioning <NSObject>
+@required
+- (UIView *)containerView;
+- (CGFloat)transitionDuration;
+- (void)finishInteractiveTransition;
+- (void)cancelInteractiveTransition;
+
+@end
 
 @interface UIViewController(ZLNavigationController)
 @property (nonatomic, weak, readonly) ZLNavigationController *zl_navigationController;
@@ -41,10 +55,11 @@
 @end
 
 @interface ZLPercentDrivenInteractiveTransition : NSObject
+@property (nonatomic, weak) id<ZLViewControllerContextTransitioning> contextTransitioning;
+
 - (void)startInteractiveTransition;
-
 - (void)updateInteractiveTransition:(CGFloat)percentComplete;
-
 - (void)finishInteractiveTransition:(CGFloat)percentComplete;
+- (void)cancelInteractiveTransition:(CGFloat)percentComplete;
 @end
 

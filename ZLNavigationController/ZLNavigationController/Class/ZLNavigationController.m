@@ -11,9 +11,9 @@
 #import <objc/runtime.h>
 
 static CGFloat kZLNavigationBarHeight = 64.0f;
-static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
+static CGFloat kZLNavigationControllerPushPopTransitionDuration = 4.375f;
 
-@interface ZLNavigationController()<UIGestureRecognizerDelegate> {
+@interface ZLNavigationController()<UIGestureRecognizerDelegate,ZLViewControllerAnimatedTransitioning,ZLViewControllerContextTransitioning> {
     BOOL _isAnimationInProgress;
     //    BOOL _popAnimationInProgress;
 }
@@ -29,7 +29,8 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
 
 @property (nonatomic, strong) ZLPercentDrivenInteractiveTransition *percentDrivenInteractiveTransition;
 
-
+@property (nonatomic, weak) id<ZLViewControllerAnimatedTransitioning> animatedTransitioning;
+@property (nonatomic, weak) id<ZLViewControllerContextTransitioning> contextTransitioning;
 @end
 
 
@@ -45,6 +46,8 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     if (self) {
         self.viewControllerStack = [NSMutableArray arrayWithObject:rootViewController];
         self.currentDisplayViewController = rootViewController;
+        self.animatedTransitioning = self;
+        self.contextTransitioning = self;
     }
     return self;
 }
@@ -97,16 +100,8 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     
     [viewController didMoveToParentViewController:self];
     [self addNavigationBarIfNeededByViewController:viewController];
-    CALayer *shadowLayer = [self addShadowLayerIn:viewController];
     
-    [self startPushAnimationWithFromViewController:self.currentDisplayViewController
-                                  toViewController:viewController
-                                          animated:animated
-                                    withCompletion:^{
-                                        [shadowLayer removeFromSuperlayer];
-                                        [self.currentDisplayViewController.view removeFromSuperview];
-                                        self.currentDisplayViewController = viewController;
-                                    }];
+    [self.animatedTransitioning pushAnimation:animated withFromViewController:self.currentDisplayViewController andToViewController:viewController];
 }
 
 - (void)popToRootViewControllerAnimated:(BOOL)animated {
@@ -125,34 +120,71 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     
     [self.view insertSubview:viewController.view belowSubview:self.transitionMaskView];
     
+    [self.animatedTransitioning popAnimation:animated withFromViewController:self.currentDisplayViewController andToViewController:viewController];
+}
+
+#pragma mark - ZLViewControllerContextTransitioning
+- (UIView *)containerView {
+    return self.view;
+}
+
+- (void)finishInteractiveTransition {
+    for (CALayer *subLayer in self.view.layer.sublayers) {
+        [subLayer removeAllAnimations];
+    }
+}
+
+- (void)cancelInteractiveTransition {
+    for (CALayer *subLayer in self.view.layer.sublayers) {
+        [subLayer removeAllAnimations];
+    }
+    self.view.layer.speed = 1.0;
+}
+
+#pragma mark - ZLViewControllerAnimatedTransitioning
+- (CGFloat)transitionDuration {
+    return kZLNavigationControllerPushPopTransitionDuration;
+}
+
+- (void)pushAnimation:(BOOL)animated withFromViewController:(UIViewController *)fromViewController andToViewController:(UIViewController *)toViewController {
+    CALayer *shadowLayer = [self addShadowLayerIn:toViewController];
+    
+    [self startPushAnimationWithFromViewController:fromViewController
+                                  toViewController:toViewController
+                                          animated:animated
+                                    withCompletion:^{
+                                        [shadowLayer removeFromSuperlayer];
+                                        [self.currentDisplayViewController.view removeFromSuperview];
+                                        self.currentDisplayViewController = toViewController;
+                                    }];
+}
+
+- (void)popAnimation:(BOOL)animated withFromViewController:(UIViewController *)fromViewController andToViewController:(UIViewController *)toViewController {
     CALayer *shadowLayer = [self addShadowLayerIn:self.currentDisplayViewController];
     
-    [self startPopAnimationWithFromViewController:self.currentDisplayViewController
-                                 toViewController:viewController
+    [self startPopAnimationWithFromViewController:fromViewController
+                                 toViewController:toViewController
                                          animated:animated
                                    withCompletion:^{
                                        [shadowLayer removeFromSuperlayer];
                                        [self.currentDisplayViewController.view removeFromSuperview];
                                        [self.currentDisplayViewController removeFromParentViewController];
-                                       self.currentDisplayViewController = viewController;
-                                       [self releaseViewControllersAfterPopToViewController:viewController];
+                                       self.currentDisplayViewController = toViewController;
+                                       [self releaseViewControllersAfterPopToViewController:toViewController];
                                        self.transitionMaskView.hidden = YES;
-                                       [self.view bringSubviewToFront:viewController.view];
+                                       [self.view bringSubviewToFront:toViewController.view];
                                    }];
 }
 
-
 #pragma mark - Animation
-- (CGFloat)transitionDuration {
-    return kZLNavigationControllerPushPopTransitionDuration;
-}
-
 - (void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag {
-    void(^callback)() = [anim valueForKeyPath:@"callback"];
-    if (callback){
-        _isAnimationInProgress = NO;
-        callback();
-        callback = nil;
+    if (flag && self.view.layer.speed == 1.0f) {
+        void(^callback)() = [anim valueForKeyPath:@"callback"];
+        if (callback){
+            _isAnimationInProgress = NO;
+            callback();
+            callback = nil;
+        }
     }
 }
 
@@ -195,6 +227,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
         callback = nil;
         return;
     }
+    
     CABasicAnimation *fromAnimation = [CABasicAnimation animationWithKeyPath:@"position.x"];
     fromAnimation.fromValue = @(CGRectGetWidth(self.view.frame)*0.5);
     fromAnimation.toValue = @(CGRectGetWidth(self.view.frame) * 1.5);
@@ -208,9 +241,9 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     CABasicAnimation *toAnimation = [CABasicAnimation animationWithKeyPath:@"position.x"];
     toAnimation.fromValue = @(0);
     toAnimation.toValue = @(CGRectGetWidth(self.view.frame)*0.5);
-    toAnimation.fillMode = kCAFillModeRemoved;
+    toAnimation.fillMode = kCAFillModeBoth;
     toAnimation.duration = [self transitionDuration];
-    toAnimation.removedOnCompletion = YES;
+    toAnimation.removedOnCompletion = NO;
     [toViewController.view.layer addAnimation:toAnimation forKey:@"zhoulee.transition.to"];
     
     CABasicAnimation *maskAnimation = [CABasicAnimation animationWithKeyPath:@"opacity"];
@@ -274,12 +307,12 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
 
 - (CALayer *)addShadowLayerIn:(UIViewController *)viewController {
     CALayer *shadowLayer = [CALayer layer];
-    shadowLayer.backgroundColor = [UIColor whiteColor].CGColor;
-    shadowLayer.frame = CGRectMake(0, 0, 1, CGRectGetHeight(viewController.view.frame));
-    shadowLayer.shadowOffset = CGSizeMake(-4, 0);
-    shadowLayer.shadowRadius = 4.0;
+    shadowLayer.backgroundColor = [UIColor clearColor].CGColor;
+    shadowLayer.frame = CGRectMake(0, 0, 0.5, CGRectGetHeight(viewController.view.frame));
+    shadowLayer.shadowOffset = CGSizeMake(-3, 0);
+    shadowLayer.shadowRadius = 2.0;
     shadowLayer.shadowColor = [UIColor blackColor].CGColor;
-    shadowLayer.shadowOpacity = 1;
+    shadowLayer.shadowOpacity = 0.5;
     shadowLayer.shadowPath = [UIBezierPath bezierPathWithRect:shadowLayer.frame].CGPath;
     [viewController.view.layer insertSublayer:shadowLayer atIndex:0];
     return shadowLayer;
@@ -313,8 +346,13 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
         [self.percentDrivenInteractiveTransition startInteractiveTransition];
     }else if (recognizer.state == UIGestureRecognizerStateChanged) {
         [self.percentDrivenInteractiveTransition updateInteractiveTransition:percent];
-    }else if (recognizer.state == UIGestureRecognizerStateEnded) {
-        [self.percentDrivenInteractiveTransition finishInteractiveTransition:percent];
+    }else if (recognizer.state == UIGestureRecognizerStateEnded || recognizer.state == UIGestureRecognizerStateCancelled) {
+        if (percent > 0.2) {
+            [self.percentDrivenInteractiveTransition finishInteractiveTransition:percent];
+        }else {
+            [self.percentDrivenInteractiveTransition cancelInteractiveTransition:percent];
+        }
+        
     }
 }
 
@@ -326,8 +364,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
 - (ZLPercentDrivenInteractiveTransition *)percentDrivenInteractiveTransition {
     if (!_percentDrivenInteractiveTransition) {
         _percentDrivenInteractiveTransition = [[ZLPercentDrivenInteractiveTransition alloc] init];
-        [_percentDrivenInteractiveTransition setValue:self.view.layer forKeyPath:@"containerLayer"];
-        [_percentDrivenInteractiveTransition setValue:@([self transitionDuration]) forKeyPath:@"duration"];
+        _percentDrivenInteractiveTransition.contextTransitioning = self;
     }
     return _percentDrivenInteractiveTransition;
 }
@@ -391,27 +428,33 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
 
 
 @interface ZLPercentDrivenInteractiveTransition()
-@property (nonatomic, strong) CALayer *containerLayer;
 
 @property (nonatomic, assign) CGFloat pausedTime;
 
-@property (nonatomic, assign) CGFloat completionSpeed;
-
-@property (nonatomic, strong) NSNumber *duration;
 @end
 
 @implementation ZLPercentDrivenInteractiveTransition
 - (void)startInteractiveTransition {
-    [self pauseLayer:self.containerLayer];
+    [self pauseLayer:[self.contextTransitioning containerView].layer];
 }
 
 - (void)updateInteractiveTransition:(CGFloat)percentComplete {
-    self.containerLayer.timeOffset =  self.pausedTime + self.duration.floatValue * percentComplete;
+    [self.contextTransitioning containerView].layer.timeOffset =  self.pausedTime + [self.contextTransitioning transitionDuration] * percentComplete;
 }
 
 - (void)finishInteractiveTransition:(CGFloat)percentComplete {
-    self.completionSpeed = percentComplete;
-    [self resumeLayer:self.containerLayer];
+    [self resumeLayer:[self.contextTransitioning containerView].layer];
+}
+
+- (void)cancelInteractiveTransition:(CGFloat)percentComplete {
+    CALayer *containerLayer = [self.contextTransitioning containerView].layer;
+    containerLayer.fillMode = kCAFillModeBoth;
+    containerLayer.speed = - 1.0;  //反方向执行动画
+    containerLayer.beginTime = CACurrentMediaTime();
+    CGFloat delay = (percentComplete * [self.contextTransitioning transitionDuration]) + 0.05;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [self.contextTransitioning cancelInteractiveTransition];
+    });
 }
 
 #pragma mark - Handle Layer
