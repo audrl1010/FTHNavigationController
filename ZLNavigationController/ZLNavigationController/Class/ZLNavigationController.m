@@ -129,9 +129,9 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
 }
 
 - (void)finishInteractiveTransition {
-    for (CALayer *subLayer in self.view.layer.sublayers) {
-        [subLayer removeAllAnimations];
-    }
+//    for (CALayer *subLayer in self.view.layer.sublayers) {
+//        [subLayer removeAllAnimations];
+//    }
 }
 
 - (void)cancelInteractiveTransition {
@@ -429,6 +429,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
 
 @property (nonatomic, assign) CGFloat pausedTime;
 
+@property (nonatomic, assign) CGFloat completeSpeed;
 @end
 
 @implementation ZLPercentDrivenInteractiveTransition
@@ -447,12 +448,24 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
 - (void)cancelInteractiveTransition:(CGFloat)percentComplete {
     CALayer *containerLayer = [self.contextTransitioning containerView].layer;
     containerLayer.fillMode = kCAFillModeBoth;
-    containerLayer.speed = - 1.0;  //反方向执行动画
-    containerLayer.beginTime = CACurrentMediaTime();
-    CGFloat delay = (percentComplete * [self.contextTransitioning transitionDuration]) + 0.05;
+    
+    self.completeSpeed = percentComplete;
+    CADisplayLink *displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(handleDisplayLink)];
+    
+    [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+//    containerLayer.speed = - 1.0;  //反方向执行动画
+//    containerLayer.beginTime = CACurrentMediaTime();
+    CGFloat delay = 1;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [displayLink invalidate];
         [self.contextTransitioning cancelInteractiveTransition];
     });
+}
+
+- (void)handleDisplayLink {
+    CGFloat timeOffset = [self.contextTransitioning containerView].layer.timeOffset;
+    timeOffset -= self.completeSpeed/60.0f;
+    [self.contextTransitioning containerView].layer.timeOffset = timeOffset;
 }
 
 #pragma mark - Handle Layer
