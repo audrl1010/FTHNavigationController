@@ -18,6 +18,10 @@
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated;
 
 - (void)popViewControllerAnimated:(BOOL)animated;
+
+- (void)popToViewController:(UIViewController *)viewController animated:(BOOL)animated;
+
+- (void)popToRootViewControllerAnimated:(BOOL)animated;
 @end
 
 
