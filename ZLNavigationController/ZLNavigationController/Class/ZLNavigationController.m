@@ -80,7 +80,6 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     [rootViewController willMoveToParentViewController:self];
     [self addChildViewController:rootViewController];
     
-    
     UIView *rootView = rootViewController.view;
     rootView.backgroundColor = [UIColor whiteColor];
     rootView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
