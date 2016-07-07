@@ -351,7 +351,9 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     }else if (recognizer.state == UIGestureRecognizerStateChanged) {
         [self.percentDrivenInteractiveTransition updateInteractiveTransition:percent];
     }else if (recognizer.state == UIGestureRecognizerStateEnded || recognizer.state == UIGestureRecognizerStateCancelled) {
-        if (percent > 0.2) {
+        CGFloat velocity = [recognizer velocityInView:self.view].x;
+        NSLog(@"%f",velocity);
+        if (percent > 0.2 || velocity > 100.0f) {
             [self.percentDrivenInteractiveTransition finishInteractiveTransition:percent];
         }else {
             [self.percentDrivenInteractiveTransition cancelInteractiveTransition:percent];
