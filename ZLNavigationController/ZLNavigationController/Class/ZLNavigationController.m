@@ -137,9 +137,6 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
 }
 
 - (void)finishInteractiveTransition {
-//    for (CALayer *subLayer in self.view.layer.sublayers) {
-//        [subLayer removeAllAnimations];
-//    }
     _isAnimationInProgress = NO;
 }
 
@@ -201,8 +198,8 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
         return;
     }
     CABasicAnimation *toAnimation = [CABasicAnimation animationWithKeyPath:@"position.x"];
-    toAnimation.fromValue = @(CGRectGetWidth(self.view.frame)*1.5);
-    toAnimation.toValue = @(CGRectGetWidth(self.view.frame)*0.5);
+    toAnimation.fromValue = @(CGRectGetWidth(self.view.frame) * 1.5);
+    toAnimation.toValue = @(CGRectGetWidth(self.view.frame) * 0.5);
     toAnimation.duration = [self.animatedTransitioning transitionDuration];
     toAnimation.fillMode = kCAFillModeBoth;
     toAnimation.removedOnCompletion = NO;
@@ -211,7 +208,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     [toViewController.view.layer addAnimation:toAnimation forKey:@"zhoulee.transition.to"];
     
     CABasicAnimation *fromAnimation = [CABasicAnimation animationWithKeyPath:@"position.x"];
-    fromAnimation.fromValue = @(CGRectGetWidth(self.view.frame)*.5);
+    fromAnimation.fromValue = @(CGRectGetWidth(self.view.frame) *.5);
     fromAnimation.toValue = @0;
     fromAnimation.fillMode = kCAFillModeRemoved;
     fromAnimation.duration = [self.animatedTransitioning transitionDuration];
@@ -235,7 +232,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     }
     
     CABasicAnimation *fromAnimation = [CABasicAnimation animationWithKeyPath:@"position.x"];
-    fromAnimation.fromValue = @(CGRectGetWidth(self.view.frame)*0.5);
+    fromAnimation.fromValue = @(CGRectGetWidth(self.view.frame) * 0.5);
     fromAnimation.toValue = @(CGRectGetWidth(self.view.frame) * 1.5);
     fromAnimation.duration = [self.animatedTransitioning transitionDuration];
     fromAnimation.fillMode = kCAFillModeBoth;
@@ -246,7 +243,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     
     CABasicAnimation *toAnimation = [CABasicAnimation animationWithKeyPath:@"position.x"];
     toAnimation.fromValue = @(0);
-    toAnimation.toValue = @(CGRectGetWidth(self.view.frame)*0.5);
+    toAnimation.toValue = @(CGRectGetWidth(self.view.frame) * 0.5);
     toAnimation.fillMode = kCAFillModeBoth;
     toAnimation.duration = [self.animatedTransitioning transitionDuration];
     toAnimation.removedOnCompletion = NO;
@@ -352,13 +349,11 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
         [self.percentDrivenInteractiveTransition updateInteractiveTransition:percent];
     }else if (recognizer.state == UIGestureRecognizerStateEnded || recognizer.state == UIGestureRecognizerStateCancelled) {
         CGFloat velocity = [recognizer velocityInView:self.view].x;
-        NSLog(@"%f",velocity);
         if (percent > 0.2 || velocity > 100.0f) {
             [self.percentDrivenInteractiveTransition finishInteractiveTransition:percent];
         }else {
             [self.percentDrivenInteractiveTransition cancelInteractiveTransition:percent];
         }
-        
     }
 }
 
