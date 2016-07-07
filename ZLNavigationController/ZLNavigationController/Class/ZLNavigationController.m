@@ -185,8 +185,6 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
             callback();
             callback = nil;
         }
-    }else {
-        
     }
 }
 
