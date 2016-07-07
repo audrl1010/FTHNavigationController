@@ -144,10 +144,6 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
 }
 
 - (void)cancelInteractiveTransition {
-    for (CALayer *subLayer in self.zl_containerView.layer.sublayers) {
-        [subLayer removeAllAnimations];
-    }
-    self.zl_containerView.layer.speed = 1.0;
     _isAnimationInProgress = NO;
 }
 
@@ -406,7 +402,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
         navigationBar = [[UINavigationBar alloc] initWithFrame:
                          CGRectMake(0, 0, CGRectGetWidth(self.view.frame), kZLNavigationBarHeight)];
         navigationBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        objc_setAssociatedObject(self, @selector(zl_navigationBar), navigationBar, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        objc_setAssociatedObject(self, _cmd, navigationBar, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
     return navigationBar;
 }
@@ -423,7 +419,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     UINavigationItem *item = objc_getAssociatedObject(self, _cmd);
     if (!item) {
         item = [[UINavigationItem alloc] initWithTitle:self.title?:@""];
-        objc_setAssociatedObject(self, @selector(zl_navigationItem), item, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        objc_setAssociatedObject(self, _cmd, item, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
     return item;
 }
@@ -453,6 +449,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
 
 - (void)finishInteractiveTransition:(CGFloat)percentComplete {
     [self resumeLayer:[self.contextTransitioning containerView].layer];
+    [self.contextTransitioning finishInteractiveTransition];
 }
 
 - (void)cancelInteractiveTransition:(CGFloat)percentComplete {
@@ -467,6 +464,10 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     CGFloat delay = 0.375;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [displayLink invalidate];
+        for (CALayer *subLayer in containerLayer.sublayers) {
+            [subLayer removeAllAnimations];
+        }
+        containerLayer.speed = 1.0;
         [self.contextTransitioning cancelInteractiveTransition];
     });
 }
