@@ -464,7 +464,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     CADisplayLink *displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(handleDisplayLink)];
     [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
     
-    CGFloat delay = 0.5;
+    CGFloat delay = 0.375;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [displayLink invalidate];
         [self.contextTransitioning cancelInteractiveTransition];

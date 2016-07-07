@@ -22,6 +22,32 @@
 - (void)popToRootViewControllerAnimated:(BOOL)animated;
 @end
 
+
+
+@interface UIViewController(ZLNavigationController)
+@property (nonatomic, weak, readonly) ZLNavigationController *zl_navigationController;
+
+@property (nonatomic, assign) BOOL zl_navigationBarHidden;
+@end
+
+@interface UIViewController(ZLNavigationBar)
+@property (nonatomic, weak) UINavigationBar *zl_navigationBar;
+@end
+
+@interface UIViewController(ZLNavigationItem)
+@property (nonatomic, weak) UINavigationItem *zl_navigationItem;
+@end
+
+@protocol ZLViewControllerContextTransitioning;
+@interface ZLPercentDrivenInteractiveTransition : NSObject
+@property (nonatomic, weak) id<ZLViewControllerContextTransitioning> contextTransitioning;
+
+- (void)startInteractiveTransition;
+- (void)updateInteractiveTransition:(CGFloat)percentComplete;
+- (void)finishInteractiveTransition:(CGFloat)percentComplete;
+- (void)cancelInteractiveTransition:(CGFloat)percentComplete;
+@end
+
 @protocol ZLViewControllerAnimatedTransitioning <NSObject>
 @required
 - (CGFloat)transitionDuration;
@@ -39,27 +65,3 @@
 - (void)cancelInteractiveTransition;
 
 @end
-
-@interface UIViewController(ZLNavigationController)
-@property (nonatomic, weak, readonly) ZLNavigationController *zl_navigationController;
-
-@property (nonatomic, assign) BOOL zl_navigationBarHidden;
-@end
-
-@interface UIViewController(ZLNavigationBar)
-@property (nonatomic, weak) UINavigationBar *zl_navigationBar;
-@end
-
-@interface UIViewController(ZLNavigationItem)
-@property (nonatomic, weak) UINavigationItem *zl_navigationItem;
-@end
-
-@interface ZLPercentDrivenInteractiveTransition : NSObject
-@property (nonatomic, weak) id<ZLViewControllerContextTransitioning> contextTransitioning;
-
-- (void)startInteractiveTransition;
-- (void)updateInteractiveTransition:(CGFloat)percentComplete;
-- (void)finishInteractiveTransition:(CGFloat)percentComplete;
-- (void)cancelInteractiveTransition:(CGFloat)percentComplete;
-@end
-
