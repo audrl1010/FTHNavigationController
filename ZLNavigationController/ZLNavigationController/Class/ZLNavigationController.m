@@ -66,7 +66,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     
     self.interactiveGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleNavigationTransition:)];
     self.interactiveGestureRecognizer.delegate = self;
-    [self.view addGestureRecognizer:self.interactiveGestureRecognizer];
+    [self.zl_containerView addGestureRecognizer:self.interactiveGestureRecognizer];
     
     self.transitionMaskView = [[UIView alloc] initWithFrame:self.view.bounds];
     self.transitionMaskView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -97,7 +97,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     self.transitionMaskView.hidden = NO;
     
     [self.viewControllerStack addObject:viewController];
-    
+    [viewController beginAppearanceTransition:YES animated:NO];
     [viewController willMoveToParentViewController:self];
     [self addChildViewController:viewController];
     
@@ -124,7 +124,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     if (_isAnimationInProgress) return;
     _isAnimationInProgress = YES;
     self.transitionMaskView.hidden = NO;
-    
+    [viewController beginAppearanceTransition:YES animated:NO];
     [self.zl_containerView insertSubview:viewController.view belowSubview:self.transitionMaskView];
     
     [self.animatedTransitioning popAnimation:animated withFromViewController:self.currentDisplayViewController andToViewController:viewController];
@@ -150,29 +150,32 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
 
 - (void)pushAnimation:(BOOL)animated withFromViewController:(UIViewController *)fromViewController andToViewController:(UIViewController *)toViewController {
     [self addShadowLayerIn:toViewController];
-    
+  
     [self startPushAnimationWithFromViewController:fromViewController
                                   toViewController:toViewController
                                           animated:animated
                                     withCompletion:^{
                                         [self.currentDisplayViewController.view removeFromSuperview];
                                         self.currentDisplayViewController = toViewController;
+                                        [toViewController endAppearanceTransition];
                                     }];
 }
 
 - (void)popAnimation:(BOOL)animated withFromViewController:(UIViewController *)fromViewController andToViewController:(UIViewController *)toViewController {
     [self addShadowLayerIn:self.currentDisplayViewController];
-    
+   
     [self startPopAnimationWithFromViewController:fromViewController
                                  toViewController:toViewController
                                          animated:animated
                                    withCompletion:^{
                                        [self.currentDisplayViewController.view removeFromSuperview];
                                        [self.currentDisplayViewController removeFromParentViewController];
+                                       [toViewController endAppearanceTransition];
                                        self.currentDisplayViewController = toViewController;
                                        [self releaseViewControllersAfterPopToViewController:toViewController];
                                        self.transitionMaskView.hidden = YES;
                                        [self.zl_containerView bringSubviewToFront:toViewController.view];
+                                       
                                    }];
 }
 
