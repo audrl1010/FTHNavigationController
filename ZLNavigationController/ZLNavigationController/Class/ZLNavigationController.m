@@ -89,13 +89,13 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
 }
 
 #pragma mark - Autorotation support
-- (BOOL)shouldAutorotate {
-    return YES;
-}
-
-- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
-    return UIInterfaceOrientationMaskPortrait;
-}
+//- (BOOL)shouldAutorotate {
+//    return YES;
+//}
+//
+//- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+//    return UIInterfaceOrientationMaskPortrait;
+//}
 
 #pragma mark Push & Pop Method
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated {
@@ -134,6 +134,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     self.transitionMaskView.hidden = NO;
     [viewController beginAppearanceTransition:YES animated:YES];
     [self.zl_containerView insertSubview:viewController.view belowSubview:self.transitionMaskView];
+    viewController.view.frame = self.zl_containerView.frame;
     
     [self.animatedTransitioning popAnimation:animated withFromViewController:self.currentDisplayViewController andToViewController:viewController];
 }
@@ -162,7 +163,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     [self startPushAnimationWithFromViewController:fromViewController
                                   toViewController:toViewController
                                           animated:animated
-                                    withCompletion:^{
+                                    withCompletion:^(BOOL isCancel){
                                         [self.currentDisplayViewController.view removeFromSuperview];
                                         self.currentDisplayViewController = toViewController;
                                         [toViewController endAppearanceTransition];
@@ -175,33 +176,43 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     [self startPopAnimationWithFromViewController:fromViewController
                                  toViewController:toViewController
                                          animated:animated
-                                   withCompletion:^{
-                                       [self.currentDisplayViewController.view removeFromSuperview];
-                                       [self.currentDisplayViewController removeFromParentViewController];
-                                       [toViewController endAppearanceTransition];
-                                       self.currentDisplayViewController = toViewController;
-                                       [self releaseViewControllersAfterPopToViewController:toViewController];
-                                       self.transitionMaskView.hidden = YES;
-                                       [self.zl_containerView bringSubviewToFront:toViewController.view];
-                                       
+                                   withCompletion:^(BOOL isCancel){
+                                       if (isCancel) {
+                                           [toViewController beginAppearanceTransition:NO animated:NO];
+                                           [toViewController.view removeFromSuperview];
+                                           [toViewController endAppearanceTransition];
+                                       }else {
+                                           [self.currentDisplayViewController.view removeFromSuperview];
+                                           [self.currentDisplayViewController removeFromParentViewController];
+                                           [toViewController endAppearanceTransition];
+                                           self.currentDisplayViewController = toViewController;
+                                           [self releaseViewControllersAfterPopToViewController:toViewController];
+                                           self.transitionMaskView.hidden = YES;
+                                           [self.zl_containerView bringSubviewToFront:toViewController.view];
+                                       }
                                    }];
 }
 
 #pragma mark - Animation
 - (void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag {
+    void(^callback)() = [anim valueForKeyPath:@"callback"];
+    _isAnimationInProgress = NO;
     if (flag && self.zl_containerView.layer.speed == 1.0f) {
-        void(^callback)() = [anim valueForKeyPath:@"callback"];
         if (callback){
-            _isAnimationInProgress = NO;
-            callback();
+            callback(NO);
+            callback = nil;
+        }
+    }else {
+        if (callback){
+            callback(YES);
             callback = nil;
         }
     }
 }
 
-- (void)startPushAnimationWithFromViewController:(UIViewController *)fromViewController toViewController:(UIViewController *)toViewController animated:(BOOL)animated withCompletion:(void(^)())callback {
+- (void)startPushAnimationWithFromViewController:(UIViewController *)fromViewController toViewController:(UIViewController *)toViewController animated:(BOOL)animated withCompletion:(void(^)(BOOL isCancel))callback {
     if (!animated) {
-        callback();
+        callback(NO);
         callback = nil;
         return;
     }
@@ -232,9 +243,9 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     [self.transitionMaskView.layer addAnimation:maskAnimation forKey:@"zhoulee.transition.opacity"];
 }
 
-- (void)startPopAnimationWithFromViewController:(UIViewController *)fromViewController toViewController:(UIViewController *)toViewController animated:(BOOL)animated withCompletion:(void(^)())callback {
+- (void)startPopAnimationWithFromViewController:(UIViewController *)fromViewController toViewController:(UIViewController *)toViewController animated:(BOOL)animated withCompletion:(void(^)(BOOL isCancel))callback {
     if (!animated) {
-        callback();
+        callback(NO);
         callback = nil;
         return;
     }
@@ -311,6 +322,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     
     for (NSUInteger i = index + 1; i < self.viewControllerStack.count; i ++) {
         UIViewController *viewController = self.viewControllerStack[i];
+        [viewController.view removeFromSuperview];
         [viewController removeFromParentViewController];
     }
     [self.viewControllerStack removeObjectsInRange:NSMakeRange(index+1, self.viewControllerStack.count-index-1)];
