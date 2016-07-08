@@ -21,11 +21,11 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.title = [NSString stringWithFormat:@"TEST %d",self.index];
-    
+
     self.view.backgroundColor = [UIColor whiteColor];
     {
         UIScrollView * scrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds];
-        
+        scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
         for (int i = 0; i < 10; i ++) {
             UIView *view = [[UIView alloc] initWithFrame:CGRectMake(0, CGRectGetHeight(self.view.bounds)/5.0 * i, CGRectGetWidth(self.view.bounds), CGRectGetHeight(self.view.bounds)/5.0)];
             view.backgroundColor = [UIColor colorWithRed:arc4random_uniform(255)/255.0 green:arc4random_uniform(255)/255.0 blue:arc4random_uniform(255)/255.0 alpha:1];
