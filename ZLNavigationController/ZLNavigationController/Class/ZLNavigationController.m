@@ -192,6 +192,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
                                            self.transitionMaskView.hidden = YES;
                                            [self.zl_containerView bringSubviewToFront:toViewController.view];
                                        }
+                                       [self.contextTransitioning finishInteractiveTransition];
                                    }];
 }
 
