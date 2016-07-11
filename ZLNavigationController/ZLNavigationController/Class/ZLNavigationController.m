@@ -168,6 +168,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
                                         [self.currentDisplayViewController.view removeFromSuperview];
                                         self.currentDisplayViewController = toViewController;
                                         [toViewController endAppearanceTransition];
+                                        [self.contextTransitioning finishInteractiveTransition];
                                     }];
 }
 
@@ -197,7 +198,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
 #pragma mark - Animation
 - (void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag {
     void(^callback)() = [anim valueForKeyPath:@"callback"];
-    _isAnimationInProgress = NO;
+//    _isAnimationInProgress = NO;
     if (flag && self.zl_containerView.layer.speed == 1.0f) {
         if (callback){
             callback(NO);
