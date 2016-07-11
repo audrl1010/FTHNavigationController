@@ -139,6 +139,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     [self.animatedTransitioning popAnimation:animated withFromViewController:self.currentDisplayViewController andToViewController:viewController];
 }
 
+
 #pragma mark - ZLViewControllerContextTransitioning
 - (UIView *)containerView {
     return self.zl_containerView;
@@ -277,7 +278,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     [self.transitionMaskView.layer addAnimation:maskAnimation forKey:@"zhoulee.transition.opacity"];
 }
 
-#pragma mark - Privite Method
+#pragma mark - Private Method
 - (void)addNavigationBarIfNeededByViewController:(UIViewController *)viewController {
     if (viewController.zl_navigationBarHidden) return;
     UINavigationBar *navigationBar = viewController.zl_navigationBar;

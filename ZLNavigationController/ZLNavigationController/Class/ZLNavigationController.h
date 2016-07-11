@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
+NS_ASSUME_NONNULL_BEGIN
 @interface ZLNavigationController : UIViewController 
 @property (nonatomic, strong, readonly) NSArray *viewControllers;
 
@@ -15,11 +16,13 @@
 
 - (instancetype)initWithRootViewController:(UIViewController *)rootViewController;
 
+
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated;
 
 - (void)popViewControllerAnimated:(BOOL)animated;
 - (void)popToViewController:(UIViewController *)viewController animated:(BOOL)animated;
 - (void)popToRootViewControllerAnimated:(BOOL)animated;
+
 @end
 
 
@@ -65,3 +68,5 @@
 - (void)cancelInteractiveTransition;
 
 @end
+
+NS_ASSUME_NONNULL_END
