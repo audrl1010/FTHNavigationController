@@ -99,7 +99,9 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
 
 #pragma mark Push & Pop Method
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated {
-    if (_isAnimationInProgress) return;
+    if (_isAnimationInProgress) {
+        return;
+    }
     _isAnimationInProgress = YES;
     [self.zl_containerView bringSubviewToFront:self.transitionMaskView];
     self.transitionMaskView.hidden = NO;
@@ -115,7 +117,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     
     [viewController didMoveToParentViewController:self];
     [self addNavigationBarIfNeededByViewController:viewController];
-
+    
     [self.animatedTransitioning pushAnimation:animated withFromViewController:self.currentDisplayViewController andToViewController:viewController];
 }
 
@@ -128,8 +130,12 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
 }
 
 - (void)popToViewController:(UIViewController *)viewController animated:(BOOL)animated {
-    if (!viewController) return;
-    if (_isAnimationInProgress) return;
+    if (!viewController) {
+        return;
+    }
+    if (_isAnimationInProgress) {
+        return;
+    }
     _isAnimationInProgress = YES;
     self.transitionMaskView.hidden = NO;
     [viewController beginAppearanceTransition:YES animated:YES];
@@ -160,7 +166,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
 
 - (void)pushAnimation:(BOOL)animated withFromViewController:(UIViewController *)fromViewController andToViewController:(UIViewController *)toViewController {
     [self addShadowLayerIn:toViewController];
-  
+    
     [self startPushAnimationWithFromViewController:fromViewController
                                   toViewController:toViewController
                                           animated:animated
@@ -174,7 +180,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
 
 - (void)popAnimation:(BOOL)animated withFromViewController:(UIViewController *)fromViewController andToViewController:(UIViewController *)toViewController {
     [self addShadowLayerIn:self.currentDisplayViewController];
-   
+    
     [self startPopAnimationWithFromViewController:fromViewController
                                  toViewController:toViewController
                                          animated:animated
@@ -199,7 +205,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
 #pragma mark - Animation
 - (void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag {
     void(^callback)() = [anim valueForKeyPath:@"callback"];
-//    _isAnimationInProgress = NO;
+    //    _isAnimationInProgress = NO;
     if (flag && self.zl_containerView.layer.speed == 1.0f) {
         if (callback){
             callback(NO);
@@ -282,7 +288,9 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
 
 #pragma mark - Private Method
 - (void)addNavigationBarIfNeededByViewController:(UIViewController *)viewController {
-    if (viewController.zl_navigationBarHidden) return;
+    if (viewController.zl_navigationBarHidden) {
+        return;
+    }
     UINavigationBar *navigationBar = viewController.zl_navigationBar;
     navigationBar.translucent = YES;
     UINavigationItem *barItem = [[UINavigationItem alloc] initWithTitle:viewController.title?:@""];
@@ -333,8 +341,8 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
 
 - (void )addShadowLayerIn:(UIViewController *)viewController {
     CALayer *shadowLayer = viewController.view.layer;
-//    shadowLayer.backgroundColor = [UIColor clearColor].CGColor;
-//    shadowLayer.frame = CGRectMake(0, 0, 0.5, CGRectGetHeight(viewController.view.frame));
+    //    shadowLayer.backgroundColor = [UIColor clearColor].CGColor;
+    //    shadowLayer.frame = CGRectMake(0, 0, 0.5, CGRectGetHeight(viewController.view.frame));
     shadowLayer.shadowOffset = CGSizeMake(-3, 0);
     shadowLayer.shadowRadius = 2.0;
     shadowLayer.shadowColor = [UIColor blackColor].CGColor;
@@ -473,7 +481,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [self.contextTransitioning finishInteractiveTransition];
     });
-
+    
 }
 
 - (void)cancelInteractiveTransition:(CGFloat)percentComplete {
@@ -488,7 +496,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     CGFloat delay = 0.375;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [displayLink invalidate];
-        containerLayer.timeOffset = self.pausedTime;
+        containerLayer.timeOffset = 0;
         for (CALayer *subLayer in containerLayer.sublayers) {
             [subLayer removeAllAnimations];
         }

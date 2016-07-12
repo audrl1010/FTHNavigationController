@@ -31,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak, readonly) ZLNavigationController *zl_navigationController;
 
 @property (nonatomic, assign) BOOL zl_navigationBarHidden;
+
 @end
 
 @interface UIViewController(ZLNavigationBar)
