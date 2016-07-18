@@ -152,10 +152,12 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
 }
 
 - (void)finishInteractiveTransition {
+    NSLog(@"finishInteractiveTransition");
     _isAnimationInProgress = NO;
 }
 
 - (void)cancelInteractiveTransition {
+    NSLog(@"cancelInteractiveTransition");
     _isAnimationInProgress = NO;
 }
 
@@ -205,17 +207,10 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
 #pragma mark - Animation
 - (void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag {
     void(^callback)() = [anim valueForKeyPath:@"callback"];
-    //    _isAnimationInProgress = NO;
-    if (flag && self.zl_containerView.layer.speed == 1.0f) {
-        if (callback){
-            callback(NO);
-            callback = nil;
-        }
-    }else {
-        if (callback){
-            callback(YES);
-            callback = nil;
-        }
+    NSLog(@"animationDidStop");
+    if (callback){
+        callback(!flag);
+        callback = nil;
     }
 }
 
@@ -361,7 +356,6 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     if (translate.x < 0) {
         return NO;
     }
-    
     if (self.viewControllerStack.count == 1) {
         return NO;
     }
@@ -477,11 +471,10 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
 
 - (void)finishInteractiveTransition:(CGFloat)percentComplete {
     [self resumeLayer:[self.contextTransitioning containerView].layer];
-    CGFloat delay = [self.contextTransitioning transitionDuration] * (1 -  percentComplete) + 0.05;
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [self.contextTransitioning finishInteractiveTransition];
-    });
-    
+//    CGFloat delay = [self.contextTransitioning transitionDuration] * (1 -  percentComplete) + 0.05;
+//    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//        [self.contextTransitioning finishInteractiveTransition];
+//    });
 }
 
 - (void)cancelInteractiveTransition:(CGFloat)percentComplete {
@@ -501,7 +494,6 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
             [subLayer removeAllAnimations];
         }
         containerLayer.speed = 1.0;
-        [self.contextTransitioning cancelInteractiveTransition];
     });
 }
 

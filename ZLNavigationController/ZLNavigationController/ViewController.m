@@ -66,7 +66,7 @@
 }
 
 - (void)didSelectedRightBarButtonItem {
-    NSLog(@"%s",__FUNCTION__);
+//    NSLog(@"%s",__FUNCTION__);
 }
 
 - (void)pushAction {
@@ -79,21 +79,21 @@
     [self.zl_navigationController popViewControllerAnimated:YES];
 }
 
-- (void)viewWillAppear:(BOOL)animated {
-    NSLog(@"enter viewWillAppear  %d\n",self.index);
-}
-
-- (void)viewDidAppear:(BOOL)animated {
-    NSLog(@"enter viewDidAppear  %d\n",self.index);
-}
-
-- (void)viewWillDisappear:(BOOL)animated {
-    NSLog(@"enter viewWillDisappear  %d\n",self.index);
-}
-
-- (void)viewDidDisappear:(BOOL)animated {
-    NSLog(@"enter viewDidDisappear  %d\n",self.index);
-}
+//- (void)viewWillAppear:(BOOL)animated {
+//    NSLog(@"enter viewWillAppear  %d\n",self.index);
+//}
+//
+//- (void)viewDidAppear:(BOOL)animated {
+//    NSLog(@"enter viewDidAppear  %d\n",self.index);
+//}
+//
+//- (void)viewWillDisappear:(BOOL)animated {
+//    NSLog(@"enter viewWillDisappear  %d\n",self.index);
+//}
+//
+//- (void)viewDidDisappear:(BOOL)animated {
+//    NSLog(@"enter viewDidDisappear  %d\n",self.index);
+//}
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
