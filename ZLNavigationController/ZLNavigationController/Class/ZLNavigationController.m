@@ -152,12 +152,10 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
 }
 
 - (void)finishInteractiveTransition {
-    NSLog(@"finishInteractiveTransition");
     _isAnimationInProgress = NO;
 }
 
 - (void)cancelInteractiveTransition {
-    NSLog(@"cancelInteractiveTransition");
     _isAnimationInProgress = NO;
 }
 
@@ -401,10 +399,11 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
 @dynamic zl_navigationController;
 
 - (ZLNavigationController *)zl_navigationController {
-    if ([self.parentViewController isKindOfClass:[ZLNavigationController class]]) {
-        return (ZLNavigationController *)self.parentViewController;
+    UIViewController *parentViewController = self.parentViewController;
+    while (![parentViewController isKindOfClass:[ZLNavigationController class]]) {
+        parentViewController = parentViewController.parentViewController;
     }
-    return nil;
+    return (ZLNavigationController *)parentViewController;
 }
 
 - (BOOL)zl_navigationBarHidden {

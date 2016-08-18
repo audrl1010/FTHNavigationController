@@ -72,28 +72,30 @@
 - (void)pushAction {
     ViewController *vc = [[ViewController alloc] init];
     vc.index = self.index + 1;
-    [self.zl_navigationController pushViewController:vc animated:YES];
+    [self.zl_navigationController pushViewController:vc animated:NO];
+//    [self presentViewController:vc animated:YES completion:nil];
+//    [self.zl_navigationController presentViewController:vc animated:YES completion:nil];
 }
 
 - (void)popAction {
     [self.zl_navigationController popViewControllerAnimated:YES];
 }
 
-//- (void)viewWillAppear:(BOOL)animated {
-//    NSLog(@"enter viewWillAppear  %d\n",self.index);
-//}
-//
-//- (void)viewDidAppear:(BOOL)animated {
-//    NSLog(@"enter viewDidAppear  %d\n",self.index);
-//}
-//
-//- (void)viewWillDisappear:(BOOL)animated {
-//    NSLog(@"enter viewWillDisappear  %d\n",self.index);
-//}
-//
-//- (void)viewDidDisappear:(BOOL)animated {
-//    NSLog(@"enter viewDidDisappear  %d\n",self.index);
-//}
+- (void)viewWillAppear:(BOOL)animated {
+    NSLog(@"invoke viewWillAppear  %d\n",self.index);
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    NSLog(@"invoke viewDidAppear  %d\n",self.index);
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    NSLog(@"invoke viewWillDisappear  %d\n",self.index);
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+    NSLog(@"invoke viewDidDisappear  %d\n",self.index);
+}
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
