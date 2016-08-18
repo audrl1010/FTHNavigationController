@@ -288,10 +288,10 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     navigationBar.translucent = YES;
     UINavigationItem *barItem = [[UINavigationItem alloc] initWithTitle:viewController.title?:@""];
     
-    barItem.leftBarButtonItem = viewController.zl_navigationItem.leftBarButtonItem;
-    barItem.leftBarButtonItems = viewController.zl_navigationItem.leftBarButtonItems;
-    barItem.rightBarButtonItem = viewController.zl_navigationItem.rightBarButtonItem;
-    barItem.rightBarButtonItems = viewController.zl_navigationItem.rightBarButtonItems;
+//    barItem.leftBarButtonItem = viewController.zl_navigationItem.leftBarButtonItem;
+//    barItem.leftBarButtonItems = viewController.zl_navigationItem.leftBarButtonItems;
+//    barItem.rightBarButtonItem = viewController.zl_navigationItem.rightBarButtonItem;
+//    barItem.rightBarButtonItems = viewController.zl_navigationItem.rightBarButtonItems;
     
     [navigationBar pushNavigationItem:barItem animated:NO];
     [viewController.view addSubview:navigationBar];
