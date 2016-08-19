@@ -286,15 +286,19 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     }
     UINavigationBar *navigationBar = viewController.zl_navigationBar;
     navigationBar.translucent = YES;
-    UINavigationItem *barItem = [[UINavigationItem alloc] initWithTitle:viewController.title?:@""];
     
-//    barItem.leftBarButtonItem = viewController.zl_navigationItem.leftBarButtonItem;
-//    barItem.leftBarButtonItems = viewController.zl_navigationItem.leftBarButtonItems;
-//    barItem.rightBarButtonItem = viewController.zl_navigationItem.rightBarButtonItem;
-//    barItem.rightBarButtonItems = viewController.zl_navigationItem.rightBarButtonItems;
-    
-    [navigationBar pushNavigationItem:barItem animated:NO];
+    [navigationBar pushNavigationItem:viewController.zl_navigationItem animated:NO];
     [viewController.view addSubview:navigationBar];
+    if (self.zl_automaticallyAdjustsScrollViewInsets) {
+        [viewController.view.subviews enumerateObjectsUsingBlock:^(__kindof UIView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            if ([obj isKindOfClass:[UIScrollView class]] && CGRectGetMinX(obj.frame) == 0) {
+                UIScrollView *scrollView = obj;
+                scrollView.contentInset = UIEdgeInsetsMake(64, 0, 0, 0);
+                scrollView.scrollIndicatorInsets = UIEdgeInsetsMake(64, 0, 0, 0);
+                scrollView.contentOffset = CGPointMake(0, -64);
+            }
+        }];
+    }
 }
 
 - (UIViewController *)rootViewController {
@@ -334,8 +338,6 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
 
 - (void )addShadowLayerIn:(UIViewController *)viewController {
     CALayer *shadowLayer = viewController.view.layer;
-    //    shadowLayer.backgroundColor = [UIColor clearColor].CGColor;
-    //    shadowLayer.frame = CGRectMake(0, 0, 0.5, CGRectGetHeight(viewController.view.frame));
     shadowLayer.shadowOffset = CGSizeMake(-3, 0);
     shadowLayer.shadowRadius = 2.0;
     shadowLayer.shadowColor = [UIColor blackColor].CGColor;
@@ -396,7 +398,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
 
 #pragma mark -
 @implementation UIViewController(ZLNavigationController)
-@dynamic zl_navigationController;
+@dynamic zl_navigationController,zl_automaticallyAdjustsScrollViewInsets;
 
 - (ZLNavigationController *)zl_navigationController {
     UIViewController *parentViewController = self.parentViewController;
@@ -414,6 +416,17 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     objc_setAssociatedObject(self, @selector(zl_navigationBarHidden), @(zl_navigationBarHidden), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
+- (BOOL)zl_automaticallyAdjustsScrollViewInsets {
+    id obj = objc_getAssociatedObject(self, _cmd);
+    if (!obj) {
+        return YES;
+    }
+    return [obj boolValue];
+}
+
+- (void)setZl_automaticallyAdjustsScrollViewInsets:(BOOL)zl_automaticallyAdjustsScrollViewInsets {
+    objc_setAssociatedObject(self, @selector(zl_automaticallyAdjustsScrollViewInsets), @(zl_automaticallyAdjustsScrollViewInsets), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
 @end
 
 @implementation UIViewController(ZLNavigationBar)

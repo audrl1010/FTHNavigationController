@@ -32,6 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) BOOL zl_navigationBarHidden;
 
+@property (nonatomic, assign) BOOL zl_automaticallyAdjustsScrollViewInsets;
 @end
 
 @interface UIViewController(ZLNavigationBar)
