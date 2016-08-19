@@ -400,7 +400,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
 
 - (ZLNavigationController *)zl_navigationController {
     UIViewController *parentViewController = self.parentViewController;
-    while (![parentViewController isKindOfClass:[ZLNavigationController class]]) {
+    while (parentViewController && ![parentViewController isKindOfClass:[ZLNavigationController class]]) {
         parentViewController = parentViewController.parentViewController;
     }
     return (ZLNavigationController *)parentViewController;
