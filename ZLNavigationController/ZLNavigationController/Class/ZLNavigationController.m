@@ -284,11 +284,10 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
     if (viewController.zl_navigationBarHidden) {
         return;
     }
-    UINavigationBar *navigationBar = viewController.zl_navigationBar;
-    navigationBar.translucent = YES;
     
-    [navigationBar pushNavigationItem:viewController.zl_navigationItem animated:NO];
-    [viewController.view addSubview:navigationBar];
+    [viewController.zl_navigationBar pushNavigationItem:viewController.zl_navigationItem animated:NO];
+    [viewController.view addSubview:viewController.zl_navigationBar];
+    
     if (self.zl_automaticallyAdjustsScrollViewInsets) {
         [viewController.view.subviews enumerateObjectsUsingBlock:^(__kindof UIView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
             if ([obj isKindOfClass:[UIScrollView class]] && CGRectGetMinX(obj.frame) == 0) {
