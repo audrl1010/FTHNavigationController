@@ -72,7 +72,7 @@
 - (void)pushAction {
     ViewController *vc = [[ViewController alloc] init];
     vc.index = self.index + 1;
-    [self.zl_navigationController pushViewController:vc animated:NO];
+    [self.zl_navigationController pushViewController:vc animated:YES];
 //    [self presentViewController:vc animated:YES completion:nil];
 //    [self.zl_navigationController presentViewController:vc animated:YES completion:nil];
 }

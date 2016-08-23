@@ -11,7 +11,7 @@
 #import <objc/runtime.h>
 
 static CGFloat kZLNavigationBarHeight = 64.0f;
-static CGFloat kZLNavigationControllerPushPopTransitionDuration = .375f;
+static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
 
 @interface ZLNavigationController()<UIGestureRecognizerDelegate,ZLViewControllerAnimatedTransitioning,ZLViewControllerContextTransitioning> {
     BOOL _isAnimationInProgress;
