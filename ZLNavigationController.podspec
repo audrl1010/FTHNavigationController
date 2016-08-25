@@ -24,7 +24,7 @@ Pod::Spec.new do |s|
   #   * Try to keep it short, snappy and to the point.
   #   * Write the description between the DESC delimiters below.!
   s.description  = <<-DESC
-		 Like system navigation controller
+		 Like system navigation controller,better then UINavigationController
                    DESC
 
   s.homepage     = "https://github.com/PatrickChow/ZLNavigationController"
@@ -79,7 +79,7 @@ Pod::Spec.new do |s|
   #  Supports git, hg, bzr, svn and HTTP.
   #
 
-  s.source       = { :git => "https://github.com/PatrickChow/ZLNavigationController", :tag => "0.0.1" }
+  s.source       = { :git => "https://github.com/PatrickChow/ZLNavigationController.git", :tag => "0.0.1" }
 
 
   # ――― Source Code ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
@@ -90,7 +90,7 @@ Pod::Spec.new do |s|
   #  Not including the public_header_files will make all headers public.
   #
 
-  s.source_files  = "ZLNavigationController/ZLNavigationController/ZLNavigationController/Class", "*.{h,m}"
+  s.source_files  = "ZLNavigationController/ZLNavigationController/Class", "*.{h,m}"
   #s.exclude_files = "Classes/Exclude"
 
   # s.public_header_files = "Classes/**/*.h"
