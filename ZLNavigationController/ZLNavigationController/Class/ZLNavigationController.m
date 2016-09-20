@@ -298,7 +298,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
     [viewController.zl_navigationBar pushNavigationItem:viewController.zl_navigationItem animated:NO];
     [viewController.view addSubview:viewController.zl_navigationBar];
     
-    if (self.zl_automaticallyAdjustsScrollViewInsets) {
+    if (viewController.zl_automaticallyAdjustsScrollViewInsets) {
         [viewController.view.subviews enumerateObjectsUsingBlock:^(__kindof UIView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
             if (CGRectGetMinY(obj.frame) == 0) {
                 UIScrollView *scrollView;
@@ -438,7 +438,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
 
 - (BOOL)zl_automaticallyAdjustsScrollViewInsets {
     id obj = objc_getAssociatedObject(self, _cmd);
-    if (!obj) {
+    if (obj == nil) {
         return YES;
     }
     return [obj boolValue];
