@@ -12,6 +12,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ZLNavigationController : UIViewController 
 @property (nonatomic, strong, readonly) NSArray *viewControllers;
 
+@property (nonatomic, weak) UIViewController *topViewController;
+
 @property (nonatomic, strong, readonly) UIPanGestureRecognizer *interactiveGestureRecognizer;
 
 - (instancetype)initWithRootViewController:(UIViewController *)rootViewController;

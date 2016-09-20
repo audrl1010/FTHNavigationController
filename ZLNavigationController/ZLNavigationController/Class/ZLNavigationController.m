@@ -13,7 +13,7 @@
 static CGFloat kZLNavigationBarHeight = 64.0f;
 static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
 
-@interface ZLNavigationController()<UIGestureRecognizerDelegate,ZLViewControllerAnimatedTransitioning,ZLViewControllerContextTransitioning> {
+@interface ZLNavigationController()<UIGestureRecognizerDelegate,ZLViewControllerAnimatedTransitioning,ZLViewControllerContextTransitioning,CAAnimationDelegate> {
     BOOL _isAnimationInProgress;
     //    BOOL _popAnimationInProgress;
 }
@@ -152,6 +152,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
 }
 
 - (void)finishInteractiveTransition {
+    [self setNeedsStatusBarAppearanceUpdate];
     _isAnimationInProgress = NO;
 }
 
@@ -279,6 +280,15 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
     [self.transitionMaskView.layer addAnimation:maskAnimation forKey:@"zhoulee.transition.opacity"];
 }
 
+#pragma mark -
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    return self.currentDisplayViewController.preferredStatusBarStyle;
+}
+
+- (BOOL)prefersStatusBarHidden {
+    return self.currentDisplayViewController.prefersStatusBarHidden;
+}
+
 #pragma mark - Private Method
 - (void)addNavigationBarIfNeededByViewController:(UIViewController *)viewController {
     if (viewController.zl_navigationBarHidden) {
@@ -290,9 +300,16 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
     
     if (self.zl_automaticallyAdjustsScrollViewInsets) {
         [viewController.view.subviews enumerateObjectsUsingBlock:^(__kindof UIView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-            if ([obj isKindOfClass:[UIScrollView class]] && CGRectGetMinX(obj.frame) == 0) {
-                UIScrollView *scrollView = obj;
-                scrollView.contentInset = UIEdgeInsetsMake(64, 0, 0, 0);
+            if (CGRectGetMinY(obj.frame) == 0) {
+                UIScrollView *scrollView;
+                if ([obj isKindOfClass:[UIScrollView class]]) {
+                    scrollView = obj;
+                }
+                if ([obj isKindOfClass:[UIWebView class]]) {
+                    scrollView = ((UIWebView *)obj).scrollView;
+                }
+                
+                scrollView.contentInset = UIEdgeInsetsMake(scrollView.contentInset.top+64, 0, scrollView.contentInset.bottom, 0);
                 scrollView.scrollIndicatorInsets = UIEdgeInsetsMake(64, 0, 0, 0);
                 scrollView.contentOffset = CGPointMake(0, -64);
             }
@@ -384,6 +401,10 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
 #pragma mark - Properties Getter
 - (NSArray *)viewControllers {
     return [NSArray arrayWithArray:self.viewControllerStack];
+}
+
+- (UIViewController *)topViewController {
+    return self.currentDisplayViewController;
 }
 
 - (ZLPercentDrivenInteractiveTransition *)percentDrivenInteractiveTransition {
