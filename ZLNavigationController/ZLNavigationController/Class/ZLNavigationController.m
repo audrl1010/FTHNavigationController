@@ -298,6 +298,8 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
     [viewController.zl_navigationBar pushNavigationItem:viewController.zl_navigationItem animated:NO];
     [viewController.view addSubview:viewController.zl_navigationBar];
     
+    [viewController.view setNeedsLayout];
+    
     if (viewController.zl_automaticallyAdjustsScrollViewInsets) {
         [viewController.view.subviews enumerateObjectsUsingBlock:^(__kindof UIView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
             if (CGRectGetMinY(obj.frame) == 0) {
@@ -308,10 +310,14 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
                 if ([obj isKindOfClass:[UIWebView class]]) {
                     scrollView = ((UIWebView *)obj).scrollView;
                 }
-                
-                scrollView.contentInset = UIEdgeInsetsMake(scrollView.contentInset.top+64, 0, scrollView.contentInset.bottom, 0);
-                scrollView.scrollIndicatorInsets = UIEdgeInsetsMake(64, 0, 0, 0);
-                scrollView.contentOffset = CGPointMake(0, -64);
+                if (scrollView) {
+                    UIEdgeInsets insets = scrollView.contentInset;
+                    insets.top += 64.0f;
+                    scrollView.contentInset = insets;
+                    scrollView.scrollIndicatorInsets = UIEdgeInsetsMake(64, 0, 0, 0);
+                    scrollView.contentOffset = CGPointMake(0, -64);
+                }
+
             }
         }];
     }
