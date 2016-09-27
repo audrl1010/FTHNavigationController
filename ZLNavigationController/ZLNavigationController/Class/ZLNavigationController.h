@@ -50,9 +50,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) id<ZLViewControllerContextTransitioning> contextTransitioning;
 
 - (void)startInteractiveTransition;
-- (void)updateInteractiveTransition:(CGFloat)percentComplete;
-- (void)finishInteractiveTransition:(CGFloat)percentComplete;
-- (void)cancelInteractiveTransition:(CGFloat)percentComplete;
+- (void)updateInteractiveTransition:(double)percentComplete;
+- (void)finishInteractiveTransition:(double)percentComplete;
+- (void)cancelInteractiveTransition:(double)percentComplete;
 @end
 
 @protocol ZLViewControllerAnimatedTransitioning <NSObject>

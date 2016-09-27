@@ -387,7 +387,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
 
 - (void)handleNavigationTransition:(UIPanGestureRecognizer *)recognizer {
     CGFloat translate = [recognizer translationInView:self.view].x;
-    CGFloat percent = translate / CGRectGetWidth(self.view.bounds);
+    double percent = (double)translate / (double)CGRectGetWidth(self.view.bounds);
     
     if (recognizer.state == UIGestureRecognizerStateBegan) {
         [self popViewControllerAnimated:YES];
@@ -496,7 +496,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
 
 @interface ZLPercentDrivenInteractiveTransition()
 
-@property (nonatomic, assign) CGFloat pausedTime;
+@property (nonatomic, assign) CFTimeInterval pausedTime;
 
 @property (nonatomic, assign) CGFloat completeSpeed;
 @end
@@ -506,7 +506,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
     [self pauseLayer:[self.contextTransitioning containerView].layer];
 }
 
-- (void)updateInteractiveTransition:(CGFloat)percentComplete {
+- (void)updateInteractiveTransition:(double)percentComplete {
     [self.contextTransitioning containerView].layer.timeOffset =  self.pausedTime + [self.contextTransitioning transitionDuration] * percentComplete;
 }
 
