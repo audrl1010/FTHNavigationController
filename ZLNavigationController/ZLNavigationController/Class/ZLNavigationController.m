@@ -522,7 +522,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
     CALayer *containerLayer = [self.contextTransitioning containerView].layer;
     containerLayer.fillMode = kCAFillModeBoth;
     
-    self.completeSpeed = percentComplete;
+    self.completeSpeed = percentComplete>0.0?percentComplete:0.0;
     
     CADisplayLink *displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(handleDisplayLink)];
     [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
