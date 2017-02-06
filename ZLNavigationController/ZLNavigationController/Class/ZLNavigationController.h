@@ -3,10 +3,12 @@
 //  ZLNavigationController
 //
 //  Created by PatrickChow on 16/7/4.
-//  Copyright © 2016年 ZhouLee. All rights reserved.
+//  Copyright © 2016-2017年 ZhouLee. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>
+
+#define ZLFloat double
 
 NS_ASSUME_NONNULL_BEGIN
 @interface ZLNavigationController : UIViewController 
@@ -50,9 +52,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) id<ZLViewControllerContextTransitioning> contextTransitioning;
 
 - (void)startInteractiveTransition;
-- (void)updateInteractiveTransition:(double)percentComplete;
-- (void)finishInteractiveTransition:(double)percentComplete;
-- (void)cancelInteractiveTransition:(double)percentComplete;
+- (void)updateInteractiveTransition:(ZLFloat)percentComplete;
+- (void)finishInteractiveTransition;
+- (void)cancelInteractiveTransition:(ZLFloat)percentComplete;
 @end
 
 @protocol ZLViewControllerAnimatedTransitioning <NSObject>
