@@ -296,7 +296,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
         [viewController.view.subviews enumerateObjectsUsingBlock:^(__kindof UIView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
             if (CGRectGetMinY(obj.frame) == 0) {
                 UIScrollView *scrollView;
-                if ([obj isKindOfClass:[UIScrollView class]]) {
+                if ([obj isKindOfClass:[UIScrollView class]] && ![obj isMemberOfClass:[UITextView class]]) {
                     scrollView = obj;
                 }
                 if ([obj isKindOfClass:[UIWebView class]]) {
@@ -380,22 +380,17 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
     ZLFloat percent = (ZLFloat)translate / (ZLFloat)CGRectGetWidth(self.view.bounds);
     
     if (recognizer.state == UIGestureRecognizerStateBegan) {
-        NSLog(@"UIGestureRecognizerStateBegan %fd",percent);
         [self popViewControllerAnimated:YES];
         [self.percentDrivenInteractiveTransition startInteractiveTransition];
     }else if (recognizer.state == UIGestureRecognizerStateChanged) {
-        NSLog(@"UIGestureRecognizerStateChanged %fd",percent);
         [self.percentDrivenInteractiveTransition updateInteractiveTransition:percent];
     }else if (recognizer.state == UIGestureRecognizerStateEnded || recognizer.state == UIGestureRecognizerStateCancelled) {
-        NSLog(@"UIGestureRecognizerStateCancelled %fd",percent);
         CGFloat velocity = [recognizer velocityInView:self.view].x;
         if (percent > 0.2 || velocity > 100.0f) {
             [self.percentDrivenInteractiveTransition finishInteractiveTransition];
         }else {
             [self.percentDrivenInteractiveTransition cancelInteractiveTransition:percent];
         }
-    }else if(recognizer.state == UIGestureRecognizerStatePossible){
-        NSLog(@"UIGestureRecognizerStatePossible %fd",percent);
     }
 }
 
