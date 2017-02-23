@@ -488,7 +488,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
 
 @property (nonatomic, assign) CFTimeInterval pausedTime;
 
-@property (nonatomic, assign) CGFloat completeSpeed;
+@property (nonatomic, assign) ZLFloat completeSpeed;
 @end
 
 @implementation ZLPercentDrivenInteractiveTransition
@@ -528,8 +528,8 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
 }
 
 - (void)handleDisplayLink {
-    CGFloat timeOffset = [self.contextTransitioning containerView].layer.timeOffset;
-    timeOffset -= self.completeSpeed/30.0f;
+    ZLFloat timeOffset = [self.contextTransitioning containerView].layer.timeOffset;
+    timeOffset -= self.completeSpeed/30.0;
     [self.contextTransitioning containerView].layer.timeOffset = timeOffset;
 }
 
