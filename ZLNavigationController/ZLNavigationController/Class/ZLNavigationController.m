@@ -253,7 +253,6 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
                                        if (isCancel) {
                                            [self.contextTransitioning cancelInteractiveTransition];
                                        } else {
-
                                            [self.contextTransitioning finishInteractiveTransition];
                                        }
                                    }];
@@ -293,14 +292,6 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
     fromAnimation.duration = [self.contextTransitioning transitionDuration];
     fromAnimation.removedOnCompletion = YES;
     [fromViewController.view.layer addAnimation:fromAnimation forKey:@"zhoulee.transition.from"];
-
-    CABasicAnimation *maskAnimation = [CABasicAnimation animationWithKeyPath:@"opacity"];
-    maskAnimation.fromValue = @(0);
-    maskAnimation.toValue = @(0);
-    maskAnimation.fillMode = kCAFillModeBoth;
-    maskAnimation.duration = [self.contextTransitioning transitionDuration];
-    maskAnimation.removedOnCompletion = YES;
-    [self.transitionMaskView.layer addAnimation:maskAnimation forKey:@"zhoulee.transition.opacity"];
 }
 
 - (void)startPopAnimationWithFromViewController:(UIViewController *)fromViewController toViewController:(UIViewController *)toViewController animated:(BOOL)animated withCompletion:(void (^)(BOOL isCancel))callback {
@@ -327,14 +318,6 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
     toAnimation.duration = [self.contextTransitioning transitionDuration];
     toAnimation.removedOnCompletion = YES;
     [toViewController.view.layer addAnimation:toAnimation forKey:@"zhoulee.transition.to"];
-
-    CABasicAnimation *maskAnimation = [CABasicAnimation animationWithKeyPath:@"opacity"];
-    maskAnimation.fromValue = @(.4f);
-    maskAnimation.toValue = @(0);
-    maskAnimation.fillMode = kCAFillModeBoth;
-    maskAnimation.duration = [self.contextTransitioning transitionDuration];
-    maskAnimation.removedOnCompletion = YES;
-    [self.transitionMaskView.layer addAnimation:maskAnimation forKey:@"zhoulee.transition.opacity"];
 }
 
 #pragma mark -
@@ -385,7 +368,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
 }
 
 - (UIViewController *)previousViewController {
-    unsigned int count = self.viewControllerStack.count;
+    unsigned long count = self.viewControllerStack.count;
     if (count > 1) {
         return self.viewControllerStack[count - 2];
     } else {
@@ -403,7 +386,6 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
 
     for (NSUInteger i = index + 1; i < count; i++) {
         UIViewController *destroyViewController = self.viewControllerStack[i];
-        [destroyViewController.view removeFromSuperview];
         [destroyViewController removeFromParentViewController];
     }
     [self.viewControllerStack removeObjectsInRange:NSMakeRange(index + 1, count - index - 1)];
@@ -585,15 +567,3 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
 }
 
 @end
-
-
-
-
-
-
-
-
-
-
-
-
