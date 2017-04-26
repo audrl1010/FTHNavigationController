@@ -25,15 +25,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property(nonatomic, strong, readonly) UIPanGestureRecognizer *interactiveGestureRecognizer;
 
-
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated;
-
 - (void)popViewControllerAnimated:(BOOL)animated;
-
 - (void)popToViewController:(UIViewController *)viewController animated:(BOOL)animated;
-
 - (void)popToRootViewControllerAnimated:(BOOL)animated;
-
 @end
 
 
@@ -59,37 +54,23 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, weak) id <ZLViewControllerContextTransitioning> contextTransitioning;
 
 - (void)startInteractiveTransition;
-
 - (void)updateInteractiveTransition:(ZLFloat)percentComplete;
-
 - (void)finishInteractiveTransition;
-
 - (void)cancelInteractiveTransition:(ZLFloat)percentComplete;
 @end
 
-@protocol ZLViewControllerAnimatedTransitioning;
-
 @protocol ZLNavigationControllerDelegate <NSObject>
 @optional
-- (id <ZLViewControllerAnimatedTransitioning>)animationControllerForOperation:(UINavigationControllerOperation)operation
-                                                           fromViewController:(UIViewController *)fromViewController
-                                                             toViewController:(UIViewController *)toViewController;
 - (void)navigationController:(ZLNavigationController *)navigationController
       willShowViewController:(UIViewController *)viewController;
-
 - (void)navigationController:(ZLNavigationController *)navigationController
       didShowViewController:(UIViewController *)viewController;
-
-
 @end
 
 @protocol ZLViewControllerAnimatedTransitioning <NSObject>
-- (CGFloat)transitionDuration;
-
 - (void)pushAnimation:(BOOL)animated
    fromViewController:(UIViewController *)fromViewController
      toViewController:(UIViewController *)toViewController;
-
 - (void)popAnimation:(BOOL)animated
   fromViewController:(UIViewController *)fromViewController
     toViewController:(UIViewController *)toViewController;
@@ -106,11 +87,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) BOOL animating;
 
 - (CGFloat)transitionDuration;
-
 - (void)finishInteractiveTransition;
-
 - (void)cancelInteractiveTransition;
-
 @end
 
 NS_ASSUME_NONNULL_END
