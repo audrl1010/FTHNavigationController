@@ -11,66 +11,104 @@
 #define ZLFloat double
 
 NS_ASSUME_NONNULL_BEGIN
-@interface ZLNavigationController : UIViewController 
-@property (nonatomic, strong, readonly) NSArray *viewControllers;
+@protocol ZLNavigationControllerDelegate;
 
-@property (nonatomic, weak) UIViewController *topViewController;
-
-@property (nonatomic, strong, readonly) UIPanGestureRecognizer *interactiveGestureRecognizer;
-
+@interface ZLNavigationController : UIViewController
+/// The designated initializer.
 - (instancetype)initWithRootViewController:(UIViewController *)rootViewController;
+
+@property(nonatomic, strong, readonly) NSArray *viewControllers;
+
+@property(nonatomic, weak) UIViewController *topViewController;
+
+@property(nonatomic, weak) id <ZLNavigationControllerDelegate> delegate;
+
+@property(nonatomic, strong, readonly) UIPanGestureRecognizer *interactiveGestureRecognizer;
 
 
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated;
 
 - (void)popViewControllerAnimated:(BOOL)animated;
+
 - (void)popToViewController:(UIViewController *)viewController animated:(BOOL)animated;
+
 - (void)popToRootViewControllerAnimated:(BOOL)animated;
 
 @end
 
 
+@interface UIViewController (ZLNavigationController)
+@property(nonatomic, weak, readonly) ZLNavigationController *zl_navigationController;
 
-@interface UIViewController(ZLNavigationController)
-@property (nonatomic, weak, readonly) ZLNavigationController *zl_navigationController;
+@property(nonatomic, assign) BOOL zl_navigationBarHidden;
 
-@property (nonatomic, assign) BOOL zl_navigationBarHidden;
-
-@property (nonatomic, assign) BOOL zl_automaticallyAdjustsScrollViewInsets;
+@property(nonatomic, assign) BOOL zl_automaticallyAdjustsScrollViewInsets;
 @end
 
-@interface UIViewController(ZLNavigationBar)
-@property (nonatomic, weak) UINavigationBar *zl_navigationBar;
+@interface UIViewController (ZLNavigationBar)
+@property(nonatomic, weak) UINavigationBar *zl_navigationBar;
 @end
 
-@interface UIViewController(ZLNavigationItem)
-@property (nonatomic, weak) UINavigationItem *zl_navigationItem;
+@interface UIViewController (ZLNavigationItem)
+@property(nonatomic, weak) UINavigationItem *zl_navigationItem;
 @end
 
 @protocol ZLViewControllerContextTransitioning;
+
 @interface ZLPercentDrivenInteractiveTransition : NSObject
-@property (nonatomic, weak) id<ZLViewControllerContextTransitioning> contextTransitioning;
+@property(nonatomic, weak) id <ZLViewControllerContextTransitioning> contextTransitioning;
 
 - (void)startInteractiveTransition;
+
 - (void)updateInteractiveTransition:(ZLFloat)percentComplete;
+
 - (void)finishInteractiveTransition;
+
 - (void)cancelInteractiveTransition:(ZLFloat)percentComplete;
 @end
 
+@protocol ZLViewControllerAnimatedTransitioning;
+
+@protocol ZLNavigationControllerDelegate <NSObject>
+@optional
+- (id <ZLViewControllerAnimatedTransitioning>)animationControllerForOperation:(UINavigationControllerOperation)operation
+                                                           fromViewController:(UIViewController *)fromViewController
+                                                             toViewController:(UIViewController *)toViewController;
+- (void)navigationController:(ZLNavigationController *)navigationController
+      willShowViewController:(UIViewController *)viewController;
+
+- (void)navigationController:(ZLNavigationController *)navigationController
+      didShowViewController:(UIViewController *)viewController;
+
+
+@end
+
 @protocol ZLViewControllerAnimatedTransitioning <NSObject>
-@required
 - (CGFloat)transitionDuration;
 
-- (void)pushAnimation:(BOOL)animated withFromViewController:(UIViewController *)fromViewController andToViewController:(UIViewController *)toViewController;
+- (void)pushAnimation:(BOOL)animated
+   fromViewController:(UIViewController *)fromViewController
+     toViewController:(UIViewController *)toViewController;
 
-- (void)popAnimation:(BOOL)animated withFromViewController:(UIViewController *)fromViewController andToViewController:(UIViewController *)toViewController;
+- (void)popAnimation:(BOOL)animated
+  fromViewController:(UIViewController *)fromViewController
+    toViewController:(UIViewController *)toViewController;
 @end
 
 @protocol ZLViewControllerContextTransitioning <NSObject>
 @required
-- (UIView *)containerView;
+
+@property(nonatomic, weak) UIView *containerView;
+
+@property(nonatomic, weak) UIViewController *fromViewController;
+@property(nonatomic, weak) UIViewController *toViewController;
+
+@property(nonatomic, assign) BOOL animating;
+
 - (CGFloat)transitionDuration;
+
 - (void)finishInteractiveTransition;
+
 - (void)cancelInteractiveTransition;
 
 @end

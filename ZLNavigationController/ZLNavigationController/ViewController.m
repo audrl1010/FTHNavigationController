@@ -69,6 +69,14 @@
 //    NSLog(@"%s",__FUNCTION__);
 }
 
+- (void)willMoveToParentViewController:(nullable UIViewController *)parent {
+    [super willMoveToParentViewController:parent];
+}
+
+- (void)didMoveToParentViewController:(nullable UIViewController *)parent {
+    [super didMoveToParentViewController:parent];
+}
+
 - (void)pushAction {
     ViewController *vc = [[ViewController alloc] init];
     vc.index = self.index + 1;
@@ -76,6 +84,13 @@
 //    [self presentViewController:vc animated:YES completion:nil];
 //    [self.zl_navigationController presentViewController:vc animated:YES completion:nil];
 }
+
+//- (UIStatusBarStyle)preferredStatusBarStyle {
+//    if (self.index % 2) {
+//        return UIStatusBarStyleDefault;
+//    }
+//    return UIStatusBarStyleLightContent;
+//}
 
 - (void)popAction {
     [self.zl_navigationController popViewControllerAnimated:YES];

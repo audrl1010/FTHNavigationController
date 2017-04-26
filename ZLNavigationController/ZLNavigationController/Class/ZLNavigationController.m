@@ -7,111 +7,175 @@
 //
 
 #import "ZLNavigationController.h"
-
 #import <objc/runtime.h>
-
-
 
 
 static CGFloat kZLNavigationBarHeight = 64.0f;
 static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
 
-@interface ZLNavigationController()<UIGestureRecognizerDelegate,ZLViewControllerAnimatedTransitioning,ZLViewControllerContextTransitioning,CAAnimationDelegate> {
-    BOOL _isAnimationInProgress;
+@interface ZLTouchFilterView : UIView
+@end
+
+@implementation ZLTouchFilterView
+- (nullable UIView *)hitTest:(CGPoint)point withEvent:(nullable UIEvent *)event {
+    return self;
 }
-@property (nonatomic, strong, readwrite) NSArray *viewControllers;
+@end
 
-@property (nonatomic, strong) NSMutableArray *viewControllerStack;
+@interface ZLContextTransitioning : NSObject <ZLViewControllerContextTransitioning>
+@end
 
-@property (nonatomic, weak) UIViewController *currentDisplayViewController;
+@implementation ZLContextTransitioning
+@synthesize containerView = _containerView;
+@synthesize fromViewController = _fromViewController;
+@synthesize toViewController = _toViewController;
+@synthesize animating = _animating;
 
-@property (nonatomic, strong) UIView *transitionMaskView;
+- (CGFloat)transitionDuration {
+    return kZLNavigationControllerPushPopTransitionDuration;
+}
 
-@property (nonatomic, strong, readwrite) UIPanGestureRecognizer *interactiveGestureRecognizer;
+- (void)finishInteractiveTransition {
+    self.animating = NO;
+}
 
-@property (nonatomic, strong) ZLPercentDrivenInteractiveTransition *percentDrivenInteractiveTransition;
+- (void)cancelInteractiveTransition {
+    self.animating = NO;
+}
 
-@property (nonatomic, weak) id<ZLViewControllerAnimatedTransitioning> animatedTransitioning;
-@property (nonatomic, weak) id<ZLViewControllerContextTransitioning> contextTransitioning;
 
-@property (nonatomic, strong) UIView *zl_containerView;
 @end
 
 
-@implementation ZLNavigationController
+@interface ZLNavigationController () <UIGestureRecognizerDelegate,
+        CAAnimationDelegate>
+
+@property(nonatomic, strong) NSMutableArray *viewControllerStack;
+
+@property(nonatomic, strong) ZLTouchFilterView *transitionMaskView;
+
+@property(nonatomic, strong, readwrite) UIPanGestureRecognizer *interactiveGestureRecognizer;
+
+@property(nonatomic, strong) ZLPercentDrivenInteractiveTransition *percentDrivenInteractiveTransition;
+
+@property(nonatomic, strong) ZLContextTransitioning *contextTransitioning;
+@property(nonatomic, strong) UIView *containerView;
+@end
+
+
+@implementation ZLNavigationController {
+    BOOL _isAnimationInProgress;
+
+    struct DelegateFlags {
+        unsigned int willShowViewController:1;
+        unsigned int didShowViewController:1;
+        unsigned int animationController:1;
+    } _delegateFlags;
+}
 
 - (void)dealloc {
     self.viewControllerStack = nil;
-    self.viewControllers = nil;
 }
 
 - (instancetype)initWithRootViewController:(UIViewController *)rootViewController {
     self = [super init];
     if (self) {
-        self.viewControllerStack = [NSMutableArray arrayWithObject:rootViewController];
-        self.currentDisplayViewController = rootViewController;
-        self.animatedTransitioning = self;
-        self.contextTransitioning = self;
+        _viewControllerStack = [@[rootViewController] mutableCopy];
+        _contextTransitioning = [[ZLContextTransitioning alloc] init];
     }
     return self;
 }
 
 - (void)loadView {
-    self.view = [[UIView alloc] init];
+    CGRect bounds = [[UIScreen mainScreen] bounds];
+
+    self.view = [[UIView alloc] initWithFrame:bounds];
     self.view.backgroundColor = [UIColor whiteColor];
-    self.view.frame = [[UIScreen mainScreen] bounds];
-    
-    self.zl_containerView = [[UIView alloc] initWithFrame:self.view.bounds];
-    self.zl_containerView.backgroundColor = [UIColor clearColor];
-    self.zl_containerView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [self.view addSubview:self.zl_containerView];
-    
-    self.interactiveGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleNavigationTransition:)];
+
+    self.contextTransitioning.containerView = self.view;
+
+    self.interactiveGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self
+                                                                                action:@selector(handleNavigationTransition:)];
     self.interactiveGestureRecognizer.delegate = self;
-    [self.zl_containerView addGestureRecognizer:self.interactiveGestureRecognizer];
-    
-    self.transitionMaskView = [[UIView alloc] initWithFrame:self.view.bounds];
+    [self.containerView addGestureRecognizer:self.interactiveGestureRecognizer];
+
+    self.transitionMaskView = [[ZLTouchFilterView alloc] initWithFrame:bounds];
     self.transitionMaskView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    self.transitionMaskView.backgroundColor = [UIColor blackColor];
-    self.transitionMaskView.alpha = 0;
-    self.transitionMaskView.hidden = YES;
-    [self.zl_containerView addSubview:self.transitionMaskView];
-    
+    self.transitionMaskView.backgroundColor = [UIColor clearColor];
+    [self.containerView addSubview:self.transitionMaskView];
+
     UIViewController *rootViewController = self.viewControllerStack[0];
-    
-    [rootViewController willMoveToParentViewController:self];
+
     [self addChildViewController:rootViewController];
-    
+    [rootViewController willMoveToParentViewController:self];
     UIView *rootView = rootViewController.view;
     rootView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [self.zl_containerView addSubview:rootView];
-    
+    [self.containerView addSubview:rootView];
     [rootViewController didMoveToParentViewController:self];
     [self addNavigationBarIfNeededByViewController:rootViewController];
 }
 
+#pragma mark - Properties
+
+- (UIView *)containerView {
+    return self.view;
+}
+
+- (NSArray *)viewControllers {
+    return [NSArray arrayWithArray:self.viewControllerStack];
+}
+
+- (UIViewController *)topViewController {
+    return self.viewControllerStack.lastObject;
+}
+
+- (ZLPercentDrivenInteractiveTransition *)percentDrivenInteractiveTransition {
+    if (!_percentDrivenInteractiveTransition) {
+        _percentDrivenInteractiveTransition = [[ZLPercentDrivenInteractiveTransition alloc] init];
+        _percentDrivenInteractiveTransition.contextTransitioning = self.contextTransitioning;
+    }
+    return _percentDrivenInteractiveTransition;
+}
+
+- (void)setDelegate:(id <ZLNavigationControllerDelegate>)delegate {
+    _delegate = delegate;
+
+    memset(&_delegateFlags, 0, sizeof(_delegateFlags));
+
+    if ([delegate respondsToSelector:@selector(navigationController:willShowViewController:animated:)]) {
+        _delegateFlags.willShowViewController = 1;
+    }
+    if ([delegate respondsToSelector:@selector(navigationController:didShowViewController:)]) {
+        _delegateFlags.didShowViewController = 1;
+    }
+    if ([delegate respondsToSelector:@selector(animationControllerForOperation:fromViewController:toViewController:)]) {
+        _delegateFlags.animationController = 1;
+    }
+}
+
 #pragma mark Push & Pop Method
+
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated {
-    if (_isAnimationInProgress) {
+    if (self.contextTransitioning.animating) {
         return;
     }
-    _isAnimationInProgress = YES;
-    [self.zl_containerView bringSubviewToFront:self.transitionMaskView];
-    self.transitionMaskView.hidden = NO;
+    self.contextTransitioning.animating = YES;
+
+    UIViewController *fromViewController = self.topViewController;
+    [self.containerView bringSubviewToFront:self.transitionMaskView];
     [self addChildViewController:viewController];
     [self.viewControllerStack addObject:viewController];
-    
+
     [viewController beginAppearanceTransition:YES animated:YES];
-    [viewController willMoveToParentViewController:self];
-   
+
     UIView *toView = viewController.view;
     toView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [self.zl_containerView addSubview:toView];
-    
-    [viewController didMoveToParentViewController:self];
+    [self.containerView addSubview:toView];
+
+//    [viewController didMoveToParentViewController:self]; // 在结束动画的时候需要手动调用一下，系统不会自己调用这个方法。
     [self addNavigationBarIfNeededByViewController:viewController];
-    
-    [self.animatedTransitioning pushAnimation:animated withFromViewController:self.currentDisplayViewController andToViewController:viewController];
+    id <ZLViewControllerAnimatedTransitioning> animator = _delegateFlags.animationController ? [self.delegate animationControllerForOperation:UINavigationControllerOperationPush fromViewController:fromViewController toViewController:viewController] : self;
+    [animator pushAnimation:animated fromViewController:fromViewController toViewController:viewController];
 }
 
 - (void)popToRootViewControllerAnimated:(BOOL)animated {
@@ -126,86 +190,82 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
     if (!viewController) {
         return;
     }
-    if (_isAnimationInProgress) {
+    if (self.contextTransitioning.animating) {
         return;
     }
-    _isAnimationInProgress = YES;
-    self.transitionMaskView.hidden = NO;
+    self.contextTransitioning.animating = YES;
     [viewController beginAppearanceTransition:YES animated:YES];
-    [self.zl_containerView insertSubview:viewController.view belowSubview:self.transitionMaskView];
-    viewController.view.frame = self.zl_containerView.frame;
-    
-    [self.animatedTransitioning popAnimation:animated withFromViewController:self.currentDisplayViewController andToViewController:viewController];
+    [self.containerView insertSubview:viewController.view belowSubview:self.transitionMaskView];
+    viewController.view.frame = self.containerView.frame;
+
+    id <ZLViewControllerAnimatedTransitioning> animator = _delegateFlags.animationController ? [self.delegate animationControllerForOperation:UINavigationControllerOperationPop fromViewController:self.topViewController toViewController:viewController] : self;
+    [animator popAnimation:animated fromViewController:self.topViewController toViewController:viewController];
+
 }
 
+#pragma mark - ZLNavigationControllerDelegate
 
-#pragma mark - ZLViewControllerContextTransitioning
-- (UIView *)containerView {
-    return self.zl_containerView;
-}
-
-- (void)finishInteractiveTransition {
-    [self setNeedsStatusBarAppearanceUpdate];
-    _isAnimationInProgress = NO;
-}
-
-- (void)cancelInteractiveTransition {
-    _isAnimationInProgress = NO;
-}
 
 #pragma mark - ZLViewControllerAnimatedTransitioning
+
 - (CGFloat)transitionDuration {
     return kZLNavigationControllerPushPopTransitionDuration;
 }
 
-- (void)pushAnimation:(BOOL)animated withFromViewController:(UIViewController *)fromViewController andToViewController:(UIViewController *)toViewController {
-    [self addShadowLayerIn:toViewController];
-    
+- (void)pushAnimation:(BOOL)animated
+   fromViewController:(UIViewController *)fromViewController
+     toViewController:(UIViewController *)toViewController {
+    [self addShadow:toViewController];
+
     [self startPushAnimationWithFromViewController:fromViewController
                                   toViewController:toViewController
                                           animated:animated
-                                    withCompletion:^(BOOL isCancel){
-                                        [self.currentDisplayViewController.view removeFromSuperview];
-                                        self.currentDisplayViewController = toViewController;
+                                    withCompletion:^(BOOL isCancel) {
+                                        [fromViewController.view removeFromSuperview];
                                         [toViewController endAppearanceTransition];
                                         [self.contextTransitioning finishInteractiveTransition];
                                     }];
 }
 
-- (void)popAnimation:(BOOL)animated withFromViewController:(UIViewController *)fromViewController andToViewController:(UIViewController *)toViewController {
-    [self addShadowLayerIn:self.currentDisplayViewController];
-    
+- (void)popAnimation:(BOOL)animated
+  fromViewController:(UIViewController *)fromViewController
+    toViewController:(UIViewController *)toViewController {
+    [self addShadow:toViewController];
+
     [self startPopAnimationWithFromViewController:fromViewController
                                  toViewController:toViewController
                                          animated:animated
-                                   withCompletion:^(BOOL isCancel){
+                                   withCompletion:^(BOOL isCancel) {
                                        if (isCancel) {
                                            [toViewController beginAppearanceTransition:NO animated:NO];
                                            [toViewController.view removeFromSuperview];
                                            [toViewController endAppearanceTransition];
-                                       }else {
-                                           [self.currentDisplayViewController.view removeFromSuperview];
-                                           [self.currentDisplayViewController removeFromParentViewController];
+                                           [self.contextTransitioning cancelInteractiveTransition];
+                                       } else {
+                                           [fromViewController.view removeFromSuperview];
+                                           [fromViewController removeFromParentViewController];
                                            [toViewController endAppearanceTransition];
-                                           self.currentDisplayViewController = toViewController;
                                            [self releaseViewControllersAfterPopToViewController:toViewController];
                                            self.transitionMaskView.hidden = YES;
-                                           [self.zl_containerView bringSubviewToFront:toViewController.view];
+                                           [self.containerView bringSubviewToFront:toViewController.view];
+                                           [self.contextTransitioning finishInteractiveTransition];
                                        }
-                                       [self.contextTransitioning finishInteractiveTransition];
+
                                    }];
 }
 
+
 #pragma mark - Animation
+
 - (void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag {
-    void(^callback)() = [anim valueForKeyPath:@"callback"];
-    if (callback){
+    void (^callback)() = [anim valueForKeyPath:@"callback"];
+    if (callback) {
         callback(!flag);
         callback = nil;
     }
 }
 
-- (void)startPushAnimationWithFromViewController:(UIViewController *)fromViewController toViewController:(UIViewController *)toViewController animated:(BOOL)animated withCompletion:(void(^)(BOOL isCancel))callback {
+- (void)startPushAnimationWithFromViewController:(UIViewController *)fromViewController toViewController:(UIViewController *)toViewController animated:(BOOL)animated withCompletion:(void (^)(BOOL isCancel))callback {
     if (!animated) {
         callback(NO);
         callback = nil;
@@ -214,93 +274,95 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
     CABasicAnimation *toAnimation = [CABasicAnimation animationWithKeyPath:@"position.x"];
     toAnimation.fromValue = @(CGRectGetWidth(self.view.frame) * 1.5);
     toAnimation.toValue = @(CGRectGetWidth(self.view.frame) * 0.5);
-    toAnimation.duration = [self.animatedTransitioning transitionDuration];
+    toAnimation.duration = [self transitionDuration];
     toAnimation.fillMode = kCAFillModeBoth;
     toAnimation.removedOnCompletion = YES;
     toAnimation.delegate = self;
     [toAnimation setValue:callback forKeyPath:@"callback"];
     [toViewController.view.layer addAnimation:toAnimation forKey:@"zhoulee.transition.to"];
-    
+
     CABasicAnimation *fromAnimation = [CABasicAnimation animationWithKeyPath:@"position.x"];
-    fromAnimation.fromValue = @(CGRectGetWidth(self.view.frame) *.5);
+    fromAnimation.fromValue = @(CGRectGetWidth(self.view.frame) * .5);
     fromAnimation.toValue = @0;
     fromAnimation.fillMode = kCAFillModeBoth;
-    fromAnimation.duration = [self.animatedTransitioning transitionDuration];
+    fromAnimation.duration = [self transitionDuration];
     fromAnimation.removedOnCompletion = YES;
     [fromViewController.view.layer addAnimation:fromAnimation forKey:@"zhoulee.transition.from"];
-    
+
     CABasicAnimation *maskAnimation = [CABasicAnimation animationWithKeyPath:@"opacity"];
     maskAnimation.fromValue = @(0);
     maskAnimation.toValue = @(0);
     maskAnimation.fillMode = kCAFillModeBoth;
-    maskAnimation.duration = [self.animatedTransitioning transitionDuration];
+    maskAnimation.duration = [self transitionDuration];
     maskAnimation.removedOnCompletion = YES;
     [self.transitionMaskView.layer addAnimation:maskAnimation forKey:@"zhoulee.transition.opacity"];
 }
 
-- (void)startPopAnimationWithFromViewController:(UIViewController *)fromViewController toViewController:(UIViewController *)toViewController animated:(BOOL)animated withCompletion:(void(^)(BOOL isCancel))callback {
+- (void)startPopAnimationWithFromViewController:(UIViewController *)fromViewController toViewController:(UIViewController *)toViewController animated:(BOOL)animated withCompletion:(void (^)(BOOL isCancel))callback {
     if (!animated) {
         callback(NO);
         callback = nil;
         return;
     }
-    
+
     CABasicAnimation *fromAnimation = [CABasicAnimation animationWithKeyPath:@"position.x"];
     fromAnimation.fromValue = @(CGRectGetWidth(self.view.frame) * 0.5);
     fromAnimation.toValue = @(CGRectGetWidth(self.view.frame) * 1.5);
-    fromAnimation.duration = [self.animatedTransitioning transitionDuration];
+    fromAnimation.duration = [self transitionDuration];
     fromAnimation.fillMode = kCAFillModeBoth;
     fromAnimation.removedOnCompletion = NO;
     fromAnimation.delegate = self;
     [fromAnimation setValue:callback forKeyPath:@"callback"];
     [fromViewController.view.layer addAnimation:fromAnimation forKey:@"zhoulee.transition.from"];
-    
+
     CABasicAnimation *toAnimation = [CABasicAnimation animationWithKeyPath:@"position.x"];
     toAnimation.fromValue = @(0);
     toAnimation.toValue = @(CGRectGetWidth(self.view.frame) * 0.5);
     toAnimation.fillMode = kCAFillModeBoth;
-    toAnimation.duration = [self.animatedTransitioning transitionDuration];
+    toAnimation.duration = [self transitionDuration];
     toAnimation.removedOnCompletion = YES;
     [toViewController.view.layer addAnimation:toAnimation forKey:@"zhoulee.transition.to"];
-    
+
     CABasicAnimation *maskAnimation = [CABasicAnimation animationWithKeyPath:@"opacity"];
     maskAnimation.fromValue = @(.4f);
     maskAnimation.toValue = @(0);
     maskAnimation.fillMode = kCAFillModeBoth;
-    maskAnimation.duration = [self.animatedTransitioning transitionDuration];
+    maskAnimation.duration = [self transitionDuration];
     maskAnimation.removedOnCompletion = YES;
     [self.transitionMaskView.layer addAnimation:maskAnimation forKey:@"zhoulee.transition.opacity"];
 }
 
 #pragma mark -
+
 - (UIStatusBarStyle)preferredStatusBarStyle {
-    return self.currentDisplayViewController.preferredStatusBarStyle;
+    return self.topViewController.preferredStatusBarStyle;
 }
 
 - (BOOL)prefersStatusBarHidden {
-    return self.currentDisplayViewController.prefersStatusBarHidden;
+    return self.topViewController.prefersStatusBarHidden;
 }
 
 #pragma mark - Private Method
+
 - (void)addNavigationBarIfNeededByViewController:(UIViewController *)viewController {
     if (viewController.zl_navigationBarHidden) {
         return;
     }
-    
+
     [viewController.zl_navigationBar pushNavigationItem:viewController.zl_navigationItem animated:NO];
     [viewController.view addSubview:viewController.zl_navigationBar];
-    
+
     [viewController.view setNeedsLayout];
-    
+
     if (viewController.zl_automaticallyAdjustsScrollViewInsets) {
-        [viewController.view.subviews enumerateObjectsUsingBlock:^(__kindof UIView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        [viewController.view.subviews enumerateObjectsUsingBlock:^(__kindof UIView *_Nonnull obj, NSUInteger idx, BOOL *_Nonnull stop) {
             if (CGRectGetMinY(obj.frame) == 0) {
                 UIScrollView *scrollView;
                 if ([obj isKindOfClass:[UIScrollView class]] && ![obj isMemberOfClass:[UITextView class]]) {
                     scrollView = obj;
                 }
                 if ([obj isKindOfClass:[UIWebView class]]) {
-                    scrollView = ((UIWebView *)obj).scrollView;
+                    scrollView = ((UIWebView *) obj).scrollView;
                 }
                 if (scrollView) {
                     UIEdgeInsets insets = scrollView.contentInset;
@@ -320,20 +382,14 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
 }
 
 - (UIViewController *)previousViewController {
-    return [self previousViewControllerByViewController:self.currentDisplayViewController];
+    unsigned int count = self.viewControllerStack.count;
+    if (count > 1) {
+        return [self.viewControllerStack objectAtIndex:count - 2];
+    } else {
+        return nil;
+    }
 }
 
-- (UIViewController *)previousViewControllerByViewController:(UIViewController *)viewController {
-    if (![self.viewControllerStack containsObject:viewController]) {
-        return nil;
-    }
-    NSUInteger index = [self.viewControllerStack indexOfObject:viewController];
-    if (index) {
-        return [self.viewControllerStack objectAtIndex:index - 1];
-    }else {
-        return nil;
-    }
-}
 
 - (NSUInteger)indexForViewControllerInStack:(UIViewController *)viewController {
     return [self.viewControllerStack indexOfObject:viewController];
@@ -341,16 +397,16 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
 
 - (void)releaseViewControllersAfterPopToViewController:(UIViewController *)viewController {
     NSUInteger index = [self.viewControllerStack indexOfObject:viewController];
-    
-    for (NSUInteger i = index + 1; i < self.viewControllerStack.count; i ++) {
+
+    for (NSUInteger i = index + 1; i < self.viewControllerStack.count; i++) {
         UIViewController *viewController = self.viewControllerStack[i];
         [viewController.view removeFromSuperview];
         [viewController removeFromParentViewController];
     }
-    [self.viewControllerStack removeObjectsInRange:NSMakeRange(index+1, self.viewControllerStack.count-index-1)];
+    [self.viewControllerStack removeObjectsInRange:NSMakeRange(index + 1, self.viewControllerStack.count - index - 1)];
 }
 
-- (void )addShadowLayerIn:(UIViewController *)viewController {
+- (void)addShadow:(UIViewController *)viewController {
     CALayer *shadowLayer = viewController.view.layer;
     shadowLayer.shadowOffset = CGSizeMake(-3, 0);
     shadowLayer.shadowRadius = 2.0;
@@ -361,8 +417,9 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
 
 
 #pragma mark - Interactive Gesture Recognizer
+
 - (BOOL)gestureRecognizerShouldBegin:(UIPanGestureRecognizer *)gestureRecognizer {
-    if (_isAnimationInProgress) {
+    if (self.contextTransitioning.animating) {
         return NO;
     }
     if (self.viewControllerStack.count == 1) {
@@ -377,51 +434,37 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
 
 - (void)handleNavigationTransition:(UIPanGestureRecognizer *)recognizer {
     CGFloat translate = [recognizer translationInView:self.view].x;
-    ZLFloat percent = (ZLFloat)translate / (ZLFloat)CGRectGetWidth(self.view.bounds);
-    
+    ZLFloat percent = (ZLFloat) translate / (ZLFloat) CGRectGetWidth(self.view.bounds);
+
     if (recognizer.state == UIGestureRecognizerStateBegan) {
         [self popViewControllerAnimated:YES];
         [self.percentDrivenInteractiveTransition startInteractiveTransition];
-    }else if (recognizer.state == UIGestureRecognizerStateChanged) {
+    } else if (recognizer.state == UIGestureRecognizerStateChanged) {
         [self.percentDrivenInteractiveTransition updateInteractiveTransition:percent];
-    }else if (recognizer.state == UIGestureRecognizerStateEnded || recognizer.state == UIGestureRecognizerStateCancelled) {
+    } else if (recognizer.state == UIGestureRecognizerStateEnded || recognizer.state == UIGestureRecognizerStateCancelled) {
         CGFloat velocity = [recognizer velocityInView:self.view].x;
         if (percent > 0.2 || velocity > 100.0f) {
             [self.percentDrivenInteractiveTransition finishInteractiveTransition];
-        }else {
+        } else {
             [self.percentDrivenInteractiveTransition cancelInteractiveTransition:percent];
         }
     }
 }
 
-#pragma mark - Properties Getter
-- (NSArray *)viewControllers {
-    return [NSArray arrayWithArray:self.viewControllerStack];
-}
 
-- (UIViewController *)topViewController {
-    return self.currentDisplayViewController;
-}
-
-- (ZLPercentDrivenInteractiveTransition *)percentDrivenInteractiveTransition {
-    if (!_percentDrivenInteractiveTransition) {
-        _percentDrivenInteractiveTransition = [[ZLPercentDrivenInteractiveTransition alloc] init];
-        _percentDrivenInteractiveTransition.contextTransitioning = self;
-    }
-    return _percentDrivenInteractiveTransition;
-}
 @end
 
 #pragma mark -
-@implementation UIViewController(ZLNavigationController)
-@dynamic zl_navigationController,zl_automaticallyAdjustsScrollViewInsets;
+
+@implementation UIViewController (ZLNavigationController)
+@dynamic zl_navigationController, zl_automaticallyAdjustsScrollViewInsets;
 
 - (ZLNavigationController *)zl_navigationController {
     UIViewController *parentViewController = self.parentViewController;
     while (parentViewController && ![parentViewController isKindOfClass:[ZLNavigationController class]]) {
         parentViewController = parentViewController.parentViewController;
     }
-    return (ZLNavigationController *)parentViewController;
+    return (ZLNavigationController *) parentViewController;
 }
 
 - (BOOL)zl_navigationBarHidden {
@@ -445,12 +488,12 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
 }
 @end
 
-@implementation UIViewController(ZLNavigationBar)
+@implementation UIViewController (ZLNavigationBar)
 - (UINavigationBar *)zl_navigationBar {
     UINavigationBar *navigationBar = objc_getAssociatedObject(self, _cmd);
     if (!navigationBar) {
         navigationBar = [[UINavigationBar alloc] initWithFrame:
-                         CGRectMake(0, 0, CGRectGetWidth(self.view.frame), kZLNavigationBarHeight)];
+                CGRectMake(0, 0, CGRectGetWidth(self.view.frame), kZLNavigationBarHeight)];
         navigationBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         objc_setAssociatedObject(self, _cmd, navigationBar, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
@@ -484,11 +527,11 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
 @end
 
 
-@interface ZLPercentDrivenInteractiveTransition()
+@interface ZLPercentDrivenInteractiveTransition ()
 
-@property (nonatomic, assign) CFTimeInterval pausedTime;
+@property(nonatomic, assign) CFTimeInterval pausedTime;
 
-@property (nonatomic, assign) ZLFloat completeSpeed;
+@property(nonatomic, assign) ZLFloat completeSpeed;
 @end
 
 @implementation ZLPercentDrivenInteractiveTransition
@@ -497,7 +540,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
 }
 
 - (void)updateInteractiveTransition:(ZLFloat)percentComplete {
-    [self.contextTransitioning containerView].layer.timeOffset =  self.pausedTime + [self.contextTransitioning transitionDuration] * percentComplete;
+    [self.contextTransitioning containerView].layer.timeOffset = self.pausedTime + [self.contextTransitioning transitionDuration] * percentComplete;
 }
 
 - (void)finishInteractiveTransition {
@@ -511,13 +554,13 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
 - (void)cancelInteractiveTransition:(ZLFloat)percentComplete {
     CALayer *containerLayer = [self.contextTransitioning containerView].layer;
     containerLayer.fillMode = kCAFillModeBoth;
-    
-    self.completeSpeed = percentComplete>0.0?percentComplete:0.0;
-    
+
+    self.completeSpeed = percentComplete > 0.0 ? percentComplete : 0.0;
+
     CADisplayLink *displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(handleDisplayLink)];
     [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(kZLNavigationControllerPushPopTransitionDuration * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t) (kZLNavigationControllerPushPopTransitionDuration * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [displayLink invalidate];
         containerLayer.timeOffset = 0;
         for (CALayer *subLayer in containerLayer.sublayers) {
@@ -529,19 +572,20 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
 
 - (void)handleDisplayLink {
     ZLFloat timeOffset = [self.contextTransitioning containerView].layer.timeOffset;
-    timeOffset -= self.completeSpeed/30.0;
+    timeOffset -= self.completeSpeed / 30.0;
     [self.contextTransitioning containerView].layer.timeOffset = timeOffset;
 }
 
 #pragma mark - Handle Layer
-- (void)pauseLayer:(CALayer*)layer {
+
+- (void)pauseLayer:(CALayer *)layer {
     CFTimeInterval pausedTime = [layer convertTime:CACurrentMediaTime() fromLayer:nil];
     layer.speed = 0.0;
     layer.timeOffset = pausedTime;
     self.pausedTime = pausedTime;
 }
 
-- (void)resumeLayer:(CALayer*)layer {
+- (void)resumeLayer:(CALayer *)layer {
     CFTimeInterval pausedTime = [layer timeOffset];
     layer.speed = 1.0;
     layer.timeOffset = 0.0;
