@@ -17,9 +17,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
 @end
 
 @implementation ZLTouchFilterView
-- (nullable UIView *)hitTest:(CGPoint)point withEvent:(nullable UIEvent *)event {
-    return self;
-}
+- (nullable UIView *)hitTest:(CGPoint)point withEvent:(nullable UIEvent *)event {return self;}
 @end
 
 @interface ZLContextTransitioning : NSObject <ZLViewControllerContextTransitioning>
@@ -51,7 +49,6 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
 
 - (void)cancelInteractiveTransition {
     self.animating = NO;
-
     [self.toViewController beginAppearanceTransition:NO animated:NO];
     [self.toView removeFromSuperview];
     [self.toViewController endAppearanceTransition];
@@ -223,7 +220,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
     [self popAnimation:animated
     fromViewController:fromViewController
       toViewController:viewController];
-    [self releaseViewControllersAfterPopToViewController:viewController];
+
 }
 
 #pragma mark - ZLViewControllerAnimatedTransitioning
@@ -254,6 +251,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
                                            [self.contextTransitioning cancelInteractiveTransition];
                                        } else {
                                            [self.contextTransitioning finishInteractiveTransition];
+                                           [self releaseViewControllersAfterPopToViewController:toViewController];
                                        }
                                    }];
 }
