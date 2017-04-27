@@ -195,8 +195,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
 }
 
 - (void)popToRootViewControllerAnimated:(BOOL)animated {
-    if (self.viewControllerStack.count == 1) {return;}
-    [self popToViewController:self.rootViewController animated:animated];
+    if (self.previousViewController) [self popToViewController:self.rootViewController animated:animated];
 }
 
 - (void)popViewControllerAnimated:(BOOL)animated {
