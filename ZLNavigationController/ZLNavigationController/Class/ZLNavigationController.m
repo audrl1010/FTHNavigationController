@@ -77,7 +77,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
 
 @property(nonatomic, strong, readwrite) UIPanGestureRecognizer *interactiveGestureRecognizer;
 
-@property(nonatomic, strong) ZLPercentDrivenInteractiveTransition *percentDrivenInteractiveTransition;
+@property(nonatomic, strong, readwrite) ZLPercentDrivenInteractiveTransition *percentDrivenInteractiveTransition;
 
 @property(nonatomic, strong) ZLContextTransitioning *contextTransitioning;
 @end
@@ -220,7 +220,6 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
     [self popAnimation:animated
     fromViewController:fromViewController
       toViewController:viewController];
-
 }
 
 #pragma mark - ZLViewControllerAnimatedTransitioning

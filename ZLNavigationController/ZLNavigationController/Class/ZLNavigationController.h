@@ -12,7 +12,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 @protocol ZLNavigationControllerDelegate;
-
+@class ZLPercentDrivenInteractiveTransition;
 @interface ZLNavigationController : UIViewController
 /// The designated initializer.
 - (instancetype)initWithRootViewController:(UIViewController *)rootViewController;
@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, weak) id <ZLNavigationControllerDelegate> delegate;
 
 @property(nonatomic, strong, readonly) UIPanGestureRecognizer *interactiveGestureRecognizer;
+@property(nonatomic, strong, readonly) ZLPercentDrivenInteractiveTransition *percentDrivenInteractiveTransition;
 
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated;
 - (void)popViewControllerAnimated:(BOOL)animated;
