@@ -22,6 +22,8 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
 
 @interface ZLContextTransitioning : NSObject <ZLViewControllerContextTransitioning>
 @property(nonatomic, assign) UINavigationControllerOperation operation;
+
+@property(nonatomic,weak) ZLNavigationController *navigationController;
 @end
 
 @implementation ZLContextTransitioning
@@ -48,6 +50,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
         [self.fromViewController endAppearanceTransition];
         [self.containerView bringSubviewToFront:self.toView];
     }
+    [self.navigationController setNeedsStatusBarAppearanceUpdate];
 }
 
 - (void)cancelInteractiveTransition {
@@ -57,6 +60,7 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
     [self.toView removeFromSuperview];
     [self.toViewController endAppearanceTransition];
     [self.fromViewController endAppearanceTransition];
+    [self.navigationController setNeedsStatusBarAppearanceUpdate];
 }
 
 #pragma mark - Properties
@@ -104,6 +108,8 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
     if (self) {
         _viewControllerStack = [@[rootViewController] mutableCopy];
         _contextTransitioning = [[ZLContextTransitioning alloc] init];
+        _contextTransitioning.navigationController = self;
+        
     }
     return self;
 }
