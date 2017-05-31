@@ -38,11 +38,14 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
     self.animating = NO;
     if (self.operation == UINavigationControllerOperationPush) {
         [self.fromView removeFromSuperview];
+        [self.toViewController didMoveToParentViewController:nil];
         [self.toViewController endAppearanceTransition];
+        [self.fromViewController endAppearanceTransition];
     } else {
         [self.fromView removeFromSuperview];
         [self.fromViewController removeFromParentViewController];
         [self.toViewController endAppearanceTransition];
+        [self.fromViewController endAppearanceTransition];
         [self.containerView bringSubviewToFront:self.toView];
     }
 }
@@ -127,7 +130,9 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
     [rootViewController willMoveToParentViewController:self];
     UIView *rootView = rootViewController.view;
     rootView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+
     [self.view addSubview:rootView];
+
     [rootViewController didMoveToParentViewController:self];
     [self addNavigationBarIfNeededByViewController:rootViewController];
 }
@@ -178,9 +183,12 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
     ///
     UIView *toView = viewController.view;
     toView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [viewController beginAppearanceTransition:YES animated:YES];
+    
+    [viewController beginAppearanceTransition:YES animated:animated];
     [self.containerView addSubview:toView];
-
+    
+    [fromViewController beginAppearanceTransition:NO animated:animated];
+    
 //    [viewController didMoveToParentViewController:self]; // 在结束动画的时候需要手动调用一下，系统不会自己调用这个方法。
     [self addNavigationBarIfNeededByViewController:viewController];
 
@@ -206,12 +214,14 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
     if (!viewController) return;
     if (self.contextTransitioning.animating) return;
 
-    [viewController beginAppearanceTransition:YES animated:YES];
+    [viewController beginAppearanceTransition:YES animated:animated];
     [self.containerView insertSubview:viewController.view belowSubview:self.transitionMaskView];
+    
     viewController.view.frame = self.containerView.frame;
 
     UIViewController *fromViewController = self.topViewController;
-
+    [fromViewController beginAppearanceTransition:NO animated:animated];
+    
     self.contextTransitioning.animating = YES;
     self.contextTransitioning.fromViewController = fromViewController;
     self.contextTransitioning.toViewController = viewController;
@@ -325,6 +335,10 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
 
 - (BOOL)prefersStatusBarHidden {
     return self.topViewController.prefersStatusBarHidden;
+}
+
+- (UIStatusBarAnimation)preferredStatusBarUpdateAnimation {
+    return UIStatusBarAnimationNone;
 }
 
 #pragma mark - Private Method
