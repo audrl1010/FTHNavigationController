@@ -53,8 +53,10 @@ static CGFloat kZLNavigationControllerPushPopTransitionDuration = .275f;
 - (void)cancelInteractiveTransition {
     self.animating = NO;
     [self.toViewController beginAppearanceTransition:NO animated:NO];
+    [self.fromViewController beginAppearanceTransition:YES animated:NO];
     [self.toView removeFromSuperview];
     [self.toViewController endAppearanceTransition];
+    [self.fromViewController endAppearanceTransition];
 }
 
 #pragma mark - Properties
