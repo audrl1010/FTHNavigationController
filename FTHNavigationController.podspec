@@ -16,14 +16,14 @@ Pod::Spec.new do |s|
   #
 
   s.name         = "FTHNavigationController"
-  s.version      = "1.0.0"
+  s.version      = "1.0.1"
   s.summary      = "This is a better navigation controller for iOS"
 
   # This description is used to generate tags and improve search results.
   #   * Think: What does it do? Why did you write it? What is the focus?
   #   * Try to keep it short, snappy and to the point.
   #   * Write the description between the DESC delimiters below.!
-  s.description  = ""
+  s.description  = "使用方法和UINavigationController一样，支持全屏，滑动更顺滑。正确的生命周期，性能高"
 
   s.homepage     = "https://github.com/PatrickChow/FTHNavigationController"
   # s.screenshots  = "www.example.com/screenshots_1.gif", "www.example.com/screenshots_2.gif"
@@ -77,7 +77,7 @@ Pod::Spec.new do |s|
   #  Supports git, hg, bzr, svn and HTTP.
   #
 
-  s.source       = { :git => "https://github.com/PatrickChow/ZfthNavigationController.git", :tag => s.version }
+  s.source       = { :git => "https://github.com/PatrickChow/FTHNavigationController.git", :tag => s.version }
 
 
   # ――― Source Code ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #

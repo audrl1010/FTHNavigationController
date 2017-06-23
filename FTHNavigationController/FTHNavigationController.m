@@ -52,7 +52,6 @@ static CGFloat kFTHNavigationControllerPushPopTransitionDuration = .275f;
     } else {
         [self cancelPopOperation];
     }
-    [self setNeedsStatusBarAppearanceUpdate];
     self.animating = NO;
 }
 
@@ -84,10 +83,6 @@ static CGFloat kFTHNavigationControllerPushPopTransitionDuration = .275f;
     [self.fromViewController endAppearanceTransition];
 }
 
-- (void)setNeedsStatusBarAppearanceUpdate {
-    [self.navigationController setNeedsStatusBarAppearanceUpdate];
-}
-
 #pragma mark - Properties
 
 - (UIView *)fromView {
@@ -114,6 +109,8 @@ static CGFloat kFTHNavigationControllerPushPopTransitionDuration = .275f;
 @property(nonatomic, strong, readwrite) FTHPercentDrivenInteractiveTransition *percentDrivenInteractiveTransition;
 
 @property(nonatomic, strong) FTHContextTransitioning *contextTransitioning;
+
+
 @end
 
 
@@ -262,8 +259,8 @@ static CGFloat kFTHNavigationControllerPushPopTransitionDuration = .275f;
                                   toViewController:toViewController
                                           animated:animated
                                     withCompletion:^(BOOL isFinish) {
-//                                        [self.contextTransitioning finishInteractiveTransition];
                                         [self.contextTransitioning completeTransition:isFinish];
+                                        [self setNeedsStatusBarAppearanceUpdate];
                                     }];
 }
 
@@ -280,6 +277,7 @@ static CGFloat kFTHNavigationControllerPushPopTransitionDuration = .275f;
                                        if (isFinish) {
                                            [self releaseViewControllersAfterPopToViewController:toViewController];
                                        }
+                                       [self setNeedsStatusBarAppearanceUpdate];
                                    }];
 }
 
