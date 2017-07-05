@@ -21,6 +21,18 @@ static CGFloat kFTHNavigationControllerPushPopTransitionDuration = .275f;
 }
 @end
 
+@protocol FTHViewControllerContextTransitioning <NSObject>
+@required
+@property(nonatomic, weak) UIView *containerView;
+@property(nonatomic, weak) UIViewController *fromViewController;
+@property(nonatomic, weak) UIViewController *toViewController;
+
+@property(nonatomic, assign) BOOL animating;
+
+- (CGFloat)transitionDuration;
+- (void)completeTransition:(BOOL)didComplete;
+@end
+
 @interface FTHContextTransitioning : NSObject <FTHViewControllerContextTransitioning>
 @property(nonatomic, assign) UINavigationControllerOperation operation;
 @property(nonatomic, assign) BOOL transitionWasCancelled;
@@ -82,9 +94,7 @@ static CGFloat kFTHNavigationControllerPushPopTransitionDuration = .275f;
     [self.toViewController endAppearanceTransition];
     [self.fromViewController endAppearanceTransition];
 }
-
 #pragma mark - Properties
-
 - (UIView *)fromView {
     return self.fromViewController.view;
 }
@@ -92,27 +102,31 @@ static CGFloat kFTHNavigationControllerPushPopTransitionDuration = .275f;
 - (UIView *)toView {
     return self.toViewController.view;
 }
-
 @end
 
+@interface UIViewController (FTHFlags)
+@property (nonatomic, assign) BOOL zl_navigationBarAlreadyAdded;
+@end
+
+@implementation UIViewController (FTHFlags)
+
+- (BOOL)zl_navigationBarAlreadyAdded {
+    return [objc_getAssociatedObject(self, _cmd) boolValue];
+}
+
+- (void)setZl_navigationBarAlreadyAdded:(BOOL)zl_navigationBarAlreadyAdded {
+    objc_setAssociatedObject(self, @selector(zl_navigationBarAlreadyAdded), @(zl_navigationBarAlreadyAdded), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+@end
 
 @interface FTHNavigationController () <UIGestureRecognizerDelegate,
-        CAAnimationDelegate,
-        FTHViewControllerAnimatedTransitioning>
-
+        CAAnimationDelegate>
 @property(nonatomic, strong) NSMutableArray<__kindof UIViewController *> *viewControllerStack;
-
 @property(nonatomic, strong) ZLTouchFilterView *transitionMaskView;
-
 @property(nonatomic, strong, readwrite) UIPanGestureRecognizer *interactiveGestureRecognizer;
-
 @property(nonatomic, strong, readwrite) FTHPercentDrivenInteractiveTransition *percentDrivenInteractiveTransition;
-
 @property(nonatomic, strong) FTHContextTransitioning *contextTransitioning;
-
-
 @end
-
 
 @implementation FTHNavigationController
 
@@ -124,6 +138,16 @@ static CGFloat kFTHNavigationControllerPushPopTransitionDuration = .275f;
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
         _viewControllerStack = [@[rootViewController] mutableCopy];
+        _contextTransitioning = [[FTHContextTransitioning alloc] init];
+        _contextTransitioning.navigationController = self;
+    }
+    return self;
+}
+
+- (instancetype)initWithViewControllers:(NSArray<UIViewController *> *)viewControllers {
+    self = [super initWithNibName:nil bundle:nil];
+    if (self) {
+        _viewControllerStack = [viewControllers mutableCopy];
         _contextTransitioning = [[FTHContextTransitioning alloc] init];
         _contextTransitioning.navigationController = self;
     }
@@ -145,17 +169,17 @@ static CGFloat kFTHNavigationControllerPushPopTransitionDuration = .275f;
     self.transitionMaskView.backgroundColor = [UIColor clearColor];
     [self.view addSubview:self.transitionMaskView];
 
-    UIViewController *rootViewController = self.viewControllerStack[0];
+    UIViewController *topViewController = self.viewControllerStack.lastObject;
 
-    [self addChildViewController:rootViewController];
-    [rootViewController willMoveToParentViewController:self];
-    UIView *rootView = rootViewController.view;
-    rootView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [self addChildViewController:topViewController];
+    [topViewController willMoveToParentViewController:self];
+    UIView *topView = topViewController.view;
+    topView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 
-    [self.view addSubview:rootView];
+    [self.view addSubview:topView];
 
-    [rootViewController didMoveToParentViewController:self];
-    [self addNavigationBarIfNeededByViewController:rootViewController];
+    [topViewController didMoveToParentViewController:self];
+    [self addNavigationBarIfNeededByViewController:topViewController];
 }
 
 #pragma mark - Properties
@@ -201,7 +225,6 @@ static CGFloat kFTHNavigationControllerPushPopTransitionDuration = .275f;
 
     [fromViewController beginAppearanceTransition:NO animated:animated];
 
-//    [viewController didMoveToParentViewController:self]; // 在结束动画的时候需要手动调用一下，系统不会自己调用这个方法。
     [self addNavigationBarIfNeededByViewController:viewController];
 
     self.contextTransitioning.animating = YES;
@@ -228,10 +251,14 @@ static CGFloat kFTHNavigationControllerPushPopTransitionDuration = .275f;
     NSAssert(viewController, @"Must specify a view controller");
     if (!viewController) return;
     if (self.contextTransitioning.animating) return;
-
+    
+    if (!viewController.parentViewController) {
+        [self addChildViewController:viewController];
+    }
+    
     [viewController beginAppearanceTransition:YES animated:animated];
     [self.containerView insertSubview:viewController.view belowSubview:self.transitionMaskView];
-
+    [self addNavigationBarIfNeededByViewController:viewController];
     viewController.view.frame = self.containerView.frame;
 
     UIViewController *fromViewController = self.topViewController;
@@ -308,7 +335,7 @@ static CGFloat kFTHNavigationControllerPushPopTransitionDuration = .275f;
 
     CABasicAnimation *fromAnimation = [CABasicAnimation animationWithKeyPath:@"position.x"];
     fromAnimation.fromValue = @(CGRectGetWidth(self.view.frame) * .5);
-    fromAnimation.toValue = @0;
+    fromAnimation.toValue = @(CGRectGetWidth(self.view.frame) * .25);
     fromAnimation.fillMode = kCAFillModeBoth;
     fromAnimation.duration = [self.contextTransitioning transitionDuration];
     fromAnimation.removedOnCompletion = YES;
@@ -332,7 +359,7 @@ static CGFloat kFTHNavigationControllerPushPopTransitionDuration = .275f;
     [fromViewController.view.layer addAnimation:fromAnimation forKey:@"zhoulee.transition.from"];
 
     CABasicAnimation *toAnimation = [CABasicAnimation animationWithKeyPath:@"position.x"];
-    toAnimation.fromValue = @(0);
+    toAnimation.fromValue = @(CGRectGetWidth(self.view.frame) * .25);
     toAnimation.toValue = @(CGRectGetWidth(self.view.frame) * 0.5);
     toAnimation.fillMode = kCAFillModeBoth;
     toAnimation.duration = [self.contextTransitioning transitionDuration];
@@ -351,17 +378,20 @@ static CGFloat kFTHNavigationControllerPushPopTransitionDuration = .275f;
 }
 
 - (UIStatusBarAnimation)preferredStatusBarUpdateAnimation {
-    return UIStatusBarAnimationNone;
+    return self.topViewController.preferredStatusBarUpdateAnimation;
 }
 
 #pragma mark - Private Method
 
 - (void)addNavigationBarIfNeededByViewController:(UIViewController *)viewController {
     if (viewController.fth_navigationBarHidden) return;
-
+    
+    if (viewController.zl_navigationBarAlreadyAdded) { return; }
+    viewController.zl_navigationBarAlreadyAdded = YES;
+    
     [viewController.fth_navigationBar pushNavigationItem:viewController.fth_navigationItem animated:NO];
     [viewController.view addSubview:viewController.fth_navigationBar];
-
+    
     [viewController.view setNeedsLayout];
 
     if (viewController.fth_automaticallyAdjustsScrollViewInsets) {

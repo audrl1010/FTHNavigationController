@@ -27,22 +27,18 @@ NS_ASSUME_NONNULL_BEGIN
 @class FTHPercentDrivenInteractiveTransition;
 
 @interface FTHNavigationController : UIViewController
-
-- (instancetype)initWithRootViewController:(UIViewController *)rootViewController NS_DESIGNATED_INITIALIZER;
-
 @property(nonatomic, strong, readonly) NSArray<__kindof UIViewController *> *viewControllers;
-
 @property(nonatomic, weak) UIViewController *topViewController;
-
 @property(nonatomic, strong, readonly) UIPanGestureRecognizer *interactiveGestureRecognizer;
-
 @property(nonatomic, strong, readonly) FTHPercentDrivenInteractiveTransition *percentDrivenInteractiveTransition;
 
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated;
-
 - (void)popViewControllerAnimated:(BOOL)animated;
 - (void)popToViewController:(UIViewController *)viewController animated:(BOOL)animated;
 - (void)popToRootViewControllerAnimated:(BOOL)animated;
+
+- (instancetype)initWithRootViewController:(UIViewController *)rootViewController NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithViewControllers:(NSArray<__kindof UIViewController *> *)viewControllers NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
 - (instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
@@ -75,23 +71,5 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 
-@protocol FTHViewControllerAnimatedTransitioning <NSObject>
-- (void)pushAnimation:(BOOL)animated fromViewController:(UIViewController *)fromViewController toViewController:(UIViewController *)toViewController;
-- (void)popAnimation:(BOOL)animated fromViewController:(UIViewController *)fromViewController toViewController:(UIViewController *)toViewController;
-@end
-
-@protocol FTHViewControllerContextTransitioning <NSObject>
-@required
-@property(nonatomic, weak) UIView *containerView;
-@property(nonatomic, weak) UIViewController *fromViewController;
-@property(nonatomic, weak) UIViewController *toViewController;
-
-@property(nonatomic, assign) BOOL animating;
-
-- (CGFloat)transitionDuration;
-
-- (void)completeTransition:(BOOL)didComplete;
-
-@end
 
 NS_ASSUME_NONNULL_END
