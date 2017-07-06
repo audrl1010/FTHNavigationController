@@ -9,7 +9,7 @@
 #import "FTHNavigationController.h"
 #import <objc/runtime.h>
 
-static CGFloat kFTHNavigationBarHeight = 64.0f;
+
 static CGFloat kFTHNavigationControllerPushPopTransitionDuration = .275f;
 
 @interface ZLTouchFilterView : UIView
@@ -389,11 +389,20 @@ static CGFloat kFTHNavigationControllerPushPopTransitionDuration = .275f;
     if (viewController.zl_navigationBarAlreadyAdded) { return; }
     viewController.zl_navigationBarAlreadyAdded = YES;
     
-    [viewController.fth_navigationBar pushNavigationItem:viewController.fth_navigationItem animated:NO];
-    [viewController.view addSubview:viewController.fth_navigationBar];
+    UINavigationBar *navigationBar = viewController.fth_navigationBar;
+    [navigationBar pushNavigationItem:viewController.fth_navigationItem animated:NO];
+    [viewController.view addSubview:navigationBar];
     
     [viewController.view setNeedsLayout];
-
+    
+    CGFloat navigationBarHeight = 64.0;
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+        if (self.presentingViewController) {
+            navigationBarHeight = 44.0;
+        }
+    }
+    navigationBar.frame = CGRectMake(0, 0, CGRectGetWidth(viewController.view.bounds), navigationBarHeight);;
+    
     if (viewController.fth_automaticallyAdjustsScrollViewInsets) {
         [viewController.view.subviews enumerateObjectsUsingBlock:^(__kindof UIView *_Nonnull obj, NSUInteger idx, BOOL *_Nonnull stop) {
             if (CGRectGetMinY(obj.frame) == 0) {
@@ -407,10 +416,10 @@ static CGFloat kFTHNavigationControllerPushPopTransitionDuration = .275f;
                 if (scrollView) {
                     UIEdgeInsets insets = scrollView.contentInset;
                     CGPoint offset = scrollView.contentOffset;
-                    insets.top += 64.0f;
-                    offset.y -= 64.0f;
+                    insets.top += navigationBarHeight;
+                    offset.y -= navigationBarHeight;
                     scrollView.contentInset = insets;
-                    scrollView.scrollIndicatorInsets = UIEdgeInsetsMake(64, 0, 0, 0);
+                    scrollView.scrollIndicatorInsets = UIEdgeInsetsMake(navigationBarHeight, 0, 0, 0);
                     scrollView.contentOffset = offset;
                 }
             }
@@ -516,8 +525,10 @@ static CGFloat kFTHNavigationControllerPushPopTransitionDuration = .275f;
 - (UINavigationBar *)fth_navigationBar {
     UINavigationBar *navigationBar = objc_getAssociatedObject(self, _cmd);
     if (!navigationBar) {
-        navigationBar = [[UINavigationBar alloc] initWithFrame:
-                CGRectMake(0, 0, CGRectGetWidth(self.view.frame), kFTHNavigationBarHeight)];
+        
+     
+        navigationBar = [[UINavigationBar alloc] initWithFrame:CGRectZero
+                ];
         navigationBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         objc_setAssociatedObject(self, _cmd, navigationBar, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
