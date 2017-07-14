@@ -8,7 +8,7 @@
 
 #import "FTHNavigationController.h"
 #import <objc/runtime.h>
-
+@import WebKit;
 
 static CGFloat kFTHNavigationControllerPushPopTransitionDuration = .275f;
 
@@ -36,8 +36,10 @@ static CGFloat kFTHNavigationControllerPushPopTransitionDuration = .275f;
 @interface FTHContextTransitioning : NSObject <FTHViewControllerContextTransitioning>
 @property(nonatomic, assign) UINavigationControllerOperation operation;
 @property(nonatomic, assign) BOOL transitionWasCancelled;
-@property(nonatomic, weak) FTHNavigationController *navigationController;
 @property(nonatomic, assign) BOOL animated;
+
+@property(nonatomic, weak) FTHNavigationController *navigationController;
+@property(nonatomic, weak) UIView *maskView;
 @end
 
 @implementation FTHContextTransitioning
@@ -65,6 +67,7 @@ static CGFloat kFTHNavigationControllerPushPopTransitionDuration = .275f;
         [self cancelPopOperation];
     }
     self.animating = NO;
+    self.maskView.hidden = YES;
 }
 
 - (void)completePushOperation {
@@ -168,7 +171,8 @@ static CGFloat kFTHNavigationControllerPushPopTransitionDuration = .275f;
     self.transitionMaskView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     self.transitionMaskView.backgroundColor = [UIColor clearColor];
     [self.view addSubview:self.transitionMaskView];
-
+    self.contextTransitioning.maskView = self.transitionMaskView;
+    
     UIViewController *topViewController = self.viewControllerStack.lastObject;
 
     [self addChildViewController:topViewController];
@@ -226,7 +230,8 @@ static CGFloat kFTHNavigationControllerPushPopTransitionDuration = .275f;
     [fromViewController beginAppearanceTransition:NO animated:animated];
 
     [self addNavigationBarIfNeededByViewController:viewController];
-
+    
+    self.transitionMaskView.hidden = NO;
     self.contextTransitioning.animating = YES;
     self.contextTransitioning.animated = animated;
     self.contextTransitioning.fromViewController = fromViewController;
@@ -263,7 +268,8 @@ static CGFloat kFTHNavigationControllerPushPopTransitionDuration = .275f;
 
     UIViewController *fromViewController = self.topViewController;
     [fromViewController beginAppearanceTransition:NO animated:animated];
-
+    
+    self.transitionMaskView.hidden = NO;
     self.contextTransitioning.animating = YES;
     self.contextTransitioning.animated = animated;
     self.contextTransitioning.fromViewController = fromViewController;
@@ -397,7 +403,7 @@ static CGFloat kFTHNavigationControllerPushPopTransitionDuration = .275f;
     
     CGFloat navigationBarHeight = 64.0;
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
-        if (self.presentingViewController) {
+        if (self.presentingViewController && self.modalPresentationStyle == UIModalPresentationFormSheet) {
             navigationBarHeight = 44.0;
         }
     }
@@ -413,6 +419,11 @@ static CGFloat kFTHNavigationControllerPushPopTransitionDuration = .275f;
                 if ([obj isKindOfClass:[UIWebView class]]) {
                     scrollView = ((UIWebView *) obj).scrollView;
                 }
+                
+                if ([obj isKindOfClass:[WKWebView class]]) {
+                    scrollView = ((WKWebView *) obj).scrollView;
+                }
+                
                 if (scrollView) {
                     UIEdgeInsets insets = scrollView.contentInset;
                     CGPoint offset = scrollView.contentOffset;
@@ -457,10 +468,10 @@ static CGFloat kFTHNavigationControllerPushPopTransitionDuration = .275f;
 
 - (void)addShadow:(UIViewController *)viewController {
     CALayer *shadowLayer = viewController.view.layer;
-    shadowLayer.shadowOffset = CGSizeMake(-3, 0);
-    shadowLayer.shadowRadius = 2.0;
+    shadowLayer.shadowOffset = CGSizeMake(-4, 0);
+    shadowLayer.shadowRadius = 3.0;
     shadowLayer.shadowColor = [UIColor blackColor].CGColor;
-    shadowLayer.shadowOpacity = 0.1;
+    shadowLayer.shadowOpacity = 0.2;
     shadowLayer.shadowPath = [UIBezierPath bezierPathWithRect:viewController.view.bounds].CGPath;
 }
 
