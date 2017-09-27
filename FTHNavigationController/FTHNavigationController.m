@@ -2,7 +2,7 @@
 //  FTHNavigationController.m
 //  FTHNavigationController
 //
-//  Created by 技术部 on 2017/9/26.
+//  Created by Patrick Chow on 2017/9/26.
 //  Copyright © 2017年 For the Horde. All rights reserved.
 //
 
@@ -14,12 +14,15 @@
 
 static NSString *const FTHTransitionContextParentViewControllerKey = @"kFTHTransitionContextParentViewControllerKey";
 
-@interface FTHViewControllerContextTransitioning : NSObject <UIViewControllerContextTransitioning>
+typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
+
+@interface FTHViewControllerContextTransitioning : NSObject <UIViewControllerContextTransitioning> {
+    CFTimeInterval _pausedTime;
+}
 @property(nonatomic, strong) UIView *containerView;
 @property(nonatomic, assign, getter=isAnimated) BOOL animated;
 @property(nonatomic, assign, getter=isInteractive) BOOL interactive;
 @property(nonatomic, assign) BOOL transitionWasCancelled;
-
 @property(nonatomic, copy) NSDictionary *viewControllerDict;
 @property(nonatomic, assign) UINavigationControllerOperation operation;
 @end
@@ -30,11 +33,15 @@ static NSString *const FTHTransitionContextParentViewControllerKey = @"kFTHTrans
 }
 
 - (void)updateInteractiveTransition:(CGFloat)percentComplete {
-
+    if (percentComplete == 0) {
+        [self pauseLayer:_containerView.layer];
+    } else {
+        _containerView.layer.timeOffset = _pausedTime + _containerView.subviews[0].layer.duration * percentComplete;
+    }
 }
 
 - (void)finishInteractiveTransition {
-
+    [self resumeLayer:_containerView.layer];
 }
 
 - (void)cancelInteractiveTransition {
@@ -98,49 +105,6 @@ static NSString *const FTHTransitionContextParentViewControllerKey = @"kFTHTrans
     return result;
 }
 
-
-@end
-
-@interface FTHPercentDrivenInteractiveTransition : NSObject {
-    __weak UIView *_containerView;
-    CFTimeInterval _pausedTime;
-}
-
-@property(nonatomic, assign) CGFloat percentComplete;
-@property(nonatomic, assign) CGFloat duration;
-//@property(nonatomic, weak) id <FTHViewControllerContextTransitioning> contextTransitioning;
-
-- (instancetype)initWithContainerView:(UIView *)containerView;
-
-- (void)startInteractiveTransition;
-
-- (void)updateInteractiveTransition:(CGFloat)percentComplete;
-
-- (void)finishInteractiveTransition;
-@end
-
-@implementation FTHPercentDrivenInteractiveTransition
-
-- (instancetype)initWithContainerView:(UIView *)containerView {
-    self = [super init];
-    if (self) {
-        _containerView = containerView;
-    }
-    return self;
-}
-
-- (void)startInteractiveTransition {
-    [self pauseLayer:_containerView.layer];
-}
-
-- (void)updateInteractiveTransition:(CGFloat)percentComplete {
-    _containerView.layer.timeOffset = _pausedTime + _duration * percentComplete;
-}
-
-- (void)finishInteractiveTransition {
-    [self resumeLayer:_containerView.layer];
-}
-
 - (void)pauseLayer:(CALayer *)layer {
     CFTimeInterval pausedTime = [layer convertTime:CACurrentMediaTime() fromLayer:nil];
     layer.speed = 0.0;
@@ -159,9 +123,136 @@ static NSString *const FTHTransitionContextParentViewControllerKey = @"kFTHTrans
 
 @end
 
-typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
+@interface FTHViewControllerAnimatedTransitioning: NSObject <UIViewControllerAnimatedTransitioning,CAAnimationDelegate> {
+    UINavigationControllerOperation _operation;
+}
+- (instancetype)initWithOperation:(UINavigationControllerOperation)operation;
+@end
 
-@interface FTHNavigationController () <CAAnimationDelegate> {
+@implementation FTHViewControllerAnimatedTransitioning
+- (instancetype)initWithOperation:(UINavigationControllerOperation)operation {
+    self = [super init];
+    if (self) {
+        _operation = operation;
+    }
+    return self;
+}
+
+- (NSTimeInterval)transitionDuration:(nullable id <UIViewControllerContextTransitioning>)transitionContext {
+    return 0.275f;
+}
+
+- (void)animateTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
+    if (_operation == UINavigationControllerOperationPush) {
+        [self _pushAnimateTransition:transitionContext];
+    } else {
+        [self _popAnimateTransition:transitionContext];
+    }
+}
+
+- (void)_pushAnimateTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
+    UIView *toView = [transitionContext viewForKey:UITransitionContextToViewKey];
+    UIView *fromView = [transitionContext viewForKey:UITransitionContextFromViewKey];
+
+    CABasicAnimation *toAnimation = [CABasicAnimation animationWithKeyPath:@"position.x"];
+    toAnimation.delegate = self;
+    toAnimation.duration = [self transitionDuration:transitionContext];
+    toAnimation.fillMode = kCAFillModeBoth;
+    toAnimation.fromValue = @(toView.layer.position.x + CGRectGetWidth(toView.bounds));
+    toAnimation.removedOnCompletion = YES;
+    toAnimation.toValue = @(toView.layer.position.x);
+
+    FTHAnimationDidStopCallback callback = ^(CAAnimation *animation, BOOL finished) {
+        [transitionContext completeTransition:finished];
+    };
+    [toAnimation setValue:callback forUndefinedKey:@"callback"];
+
+    [toView.layer addAnimation:toAnimation forKey:@"ForTheHorde.transition.to"];
+
+    CABasicAnimation *fromAnimation = [CABasicAnimation animationWithKeyPath:@"position.x"];
+    fromAnimation.duration = [self transitionDuration:transitionContext];
+    fromAnimation.fillMode = kCAFillModeBoth;
+    fromAnimation.fromValue = @(fromView.layer.position.x);
+    fromAnimation.removedOnCompletion = YES;
+    fromAnimation.toValue = @(fromView.layer.position.x - CGRectGetMidX(fromView.bounds));
+    [fromView.layer addAnimation:fromAnimation forKey:@"ForTheHorde.transition.from"];
+}
+
+- (void)_popAnimateTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
+    UIView *toView = [transitionContext viewForKey:UITransitionContextToViewKey];
+    UIView *fromView = [transitionContext viewForKey:UITransitionContextFromViewKey];
+
+    CABasicAnimation *fromAnimation = [CABasicAnimation animationWithKeyPath:@"position.x"];
+    fromAnimation.delegate = self;
+    fromAnimation.duration = [self transitionDuration:transitionContext];
+    fromAnimation.fillMode = kCAFillModeBoth;
+    fromAnimation.fromValue = @(fromView.layer.position.x);
+    fromAnimation.removedOnCompletion = NO;
+    fromAnimation.toValue = @(fromView.layer.position.x + CGRectGetWidth(fromView.bounds));
+
+    FTHAnimationDidStopCallback callback = ^(CAAnimation *animation, BOOL finished) {
+        [transitionContext completeTransition:finished];
+    };
+    [fromAnimation setValue:callback forUndefinedKey:@"callback"];
+
+    [fromView.layer addAnimation:fromAnimation forKey:@"ForTheHorde.transition.from"];
+
+    CABasicAnimation *toAnimation = [CABasicAnimation animationWithKeyPath:@"position.x"];
+    toAnimation.duration = [self transitionDuration:transitionContext];
+    toAnimation.fillMode = kCAFillModeBoth;
+    toAnimation.fromValue = @(toView.layer.position.x - CGRectGetMidX(toView.bounds));
+    toAnimation.removedOnCompletion = YES;
+    toAnimation.toValue = @(toView.layer.position.x);
+
+    [toView.layer addAnimation:toAnimation forKey:@"ForTheHorde.transition.to"];
+}
+
+- (void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag {
+    FTHAnimationDidStopCallback callback = [anim valueForUndefinedKey:@"callback"];
+    if (callback) {
+        callback(anim, flag);
+    }
+}
+
+@end
+
+@interface FTHPercentDrivenInteractiveTransition : NSObject <UIViewControllerInteractiveTransitioning> {
+    id <UIViewControllerAnimatedTransitioning> _animator;
+    id <UIViewControllerContextTransitioning>  _transitionContext;
+}
+
+- (instancetype)initWithAnimator:(id <UIViewControllerAnimatedTransitioning>)animator;
+
+- (void)updateInteractiveTransition:(CGFloat)percentComplete;
+- (void)finishInteractiveTransition;
+@end
+
+@implementation FTHPercentDrivenInteractiveTransition
+- (instancetype)initWithAnimator:(id <UIViewControllerAnimatedTransitioning>)animator {
+      self = [super init];
+    if (self) {
+        _animator = animator;
+    }
+    return self;
+}
+
+- (void)startInteractiveTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
+    _transitionContext = transitionContext;
+
+    [_animator animateTransition:transitionContext];
+}
+
+- (void)updateInteractiveTransition:(CGFloat)percentComplete {
+    [_transitionContext updateInteractiveTransition:percentComplete];
+}
+
+- (void)finishInteractiveTransition {
+    [_transitionContext finishInteractiveTransition];
+}
+
+@end
+
+@interface FTHNavigationController () {
     NSPointerArray *_viewControllerStack;
     UIPanGestureRecognizer *_interactiveGestureRecognizer;
     FTHPercentDrivenInteractiveTransition *_percentDrivenInteractiveTransition;
@@ -202,8 +293,6 @@ typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
 
     _interactiveGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handelPanGesture:)];
     [self.view addGestureRecognizer:_interactiveGestureRecognizer];
-
-    _percentDrivenInteractiveTransition = [[FTHPercentDrivenInteractiveTransition alloc] initWithContainerView:self.view];
 }
 
 #pragma mark Getter & Setter
@@ -327,10 +416,6 @@ typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
     return toViewController;
 }
 
-- (NSTimeInterval)_transitionDuration:(nullable id <UIViewControllerContextTransitioning>)transitionContext {
-    return 0.275f;
-}
-
 - (void)beginPerformAnimationOperation:(UINavigationControllerOperation)operation fromViewController:(UIViewController *)fromViewController toViewController:(UIViewController *)toViewController animated:(BOOL)animated interactive:(BOOL)interactive {
     // wrapper transition context
     FTHViewControllerContextTransitioning *transitionContext = [[FTHViewControllerContextTransitioning alloc] init];
@@ -358,90 +443,21 @@ typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
         if (_delegateFlags.interactionControllerForAnimationController && interactive) {
             id <UIViewControllerInteractiveTransitioning> interactiveAnimator = [self.delegate navigationController:self interactionControllerForAnimationController:animator];
             [interactiveAnimator startInteractiveTransition:transitionContext];
-
-            _percentDrivenInteractiveTransition.duration = [animator transitionDuration:transitionContext];
         } else {
             [animator animateTransition:transitionContext];
         }
 #warning TODO: 增加一个callback, 触发didShowViewController
     } else {
-        [self _animateTransition:transitionContext operation:operation];
-
         if (interactive) {
-            _percentDrivenInteractiveTransition.duration = [self _transitionDuration:transitionContext];
+            FTHViewControllerAnimatedTransitioning *animator = [[FTHViewControllerAnimatedTransitioning alloc] initWithOperation:operation];
+            FTHPercentDrivenInteractiveTransition *interactiveAnimator = [[FTHPercentDrivenInteractiveTransition alloc] initWithAnimator:animator];
+            [interactiveAnimator startInteractiveTransition:transitionContext];
+
+            _percentDrivenInteractiveTransition = interactiveAnimator;
+        } else {
+            FTHViewControllerAnimatedTransitioning *animator = [[FTHViewControllerAnimatedTransitioning alloc] initWithOperation:operation];
+            [animator animateTransition:transitionContext];
         }
-    }
-}
-
-- (void)_animateTransition:(id <UIViewControllerContextTransitioning>)transitionContext operation:(UINavigationControllerOperation)operation {
-    if (operation == UINavigationControllerOperationPush) {
-        [self _pushAnimateTransition:transitionContext];
-    } else {
-        [self _popAnimateTransition:transitionContext];
-    }
-}
-
-- (void)_pushAnimateTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
-    UIView *toView = [transitionContext viewForKey:UITransitionContextToViewKey];
-    UIView *fromView = [transitionContext viewForKey:UITransitionContextFromViewKey];
-
-    CABasicAnimation *toAnimation = [CABasicAnimation animationWithKeyPath:@"position.x"];
-    toAnimation.delegate = self;
-    toAnimation.duration = [self _transitionDuration:transitionContext];
-    toAnimation.fillMode = kCAFillModeBoth;
-    toAnimation.fromValue = @(toView.layer.position.x + CGRectGetWidth(toView.bounds));
-    toAnimation.removedOnCompletion = YES;
-    toAnimation.toValue = @(toView.layer.position.x);
-
-    FTHAnimationDidStopCallback callback = ^(CAAnimation *animation, BOOL finished) {
-        [transitionContext completeTransition:finished];
-    };
-    [toAnimation setValue:callback forUndefinedKey:@"callback"];
-
-    [toView.layer addAnimation:toAnimation forKey:@"ForTheHorde.transition.to"];
-
-    CABasicAnimation *fromAnimation = [CABasicAnimation animationWithKeyPath:@"position.x"];
-    fromAnimation.duration = [self _transitionDuration:transitionContext];
-    fromAnimation.fillMode = kCAFillModeBoth;
-    fromAnimation.fromValue = @(fromView.layer.position.x);
-    fromAnimation.removedOnCompletion = YES;
-    fromAnimation.toValue = @(fromView.layer.position.x - CGRectGetMidX(fromView.bounds));
-    [fromView.layer addAnimation:fromAnimation forKey:@"ForTheHorde.transition.from"];
-}
-
-- (void)_popAnimateTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
-    UIView *toView = [transitionContext viewForKey:UITransitionContextToViewKey];
-    UIView *fromView = [transitionContext viewForKey:UITransitionContextFromViewKey];
-
-    CABasicAnimation *fromAnimation = [CABasicAnimation animationWithKeyPath:@"position.x"];
-    fromAnimation.delegate = self;
-    fromAnimation.duration = [self _transitionDuration:transitionContext];
-    fromAnimation.fillMode = kCAFillModeBoth;
-    fromAnimation.fromValue = @(fromView.layer.position.x);
-    fromAnimation.removedOnCompletion = NO;
-    fromAnimation.toValue = @(fromView.layer.position.x + CGRectGetWidth(fromView.bounds));
-
-    FTHAnimationDidStopCallback callback = ^(CAAnimation *animation, BOOL finished) {
-        [transitionContext completeTransition:finished];
-    };
-    [fromAnimation setValue:callback forUndefinedKey:@"callback"];
-
-    [fromView.layer addAnimation:fromAnimation forKey:@"ForTheHorde.transition.from"];
-
-    CABasicAnimation *toAnimation = [CABasicAnimation animationWithKeyPath:@"position.x"];
-    toAnimation.duration = [self _transitionDuration:transitionContext];
-    toAnimation.fillMode = kCAFillModeBoth;
-    toAnimation.fromValue = @(toView.layer.position.x - CGRectGetMidX(toView.bounds));
-    toAnimation.removedOnCompletion = YES;
-    toAnimation.toValue = @(toView.layer.position.x);
-
-    [toView.layer addAnimation:toAnimation forKey:@"ForTheHorde.transition.to"];
-}
-
-- (void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag {
-    FTHAnimationDidStopCallback callback = [anim valueForUndefinedKey:@"callback"];
-    if (callback) {
-        callback(anim, flag);
     }
 }
 
@@ -452,10 +468,9 @@ typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
     CGFloat percent = translate / CGRectGetWidth(self.view.bounds);
 
     switch (recognizer.state) {
-        case UIGestureRecognizerStateBegan: {
+        case UIGestureRecognizerStateBegan:
             [self _popViewControllerAnimated:YES interactive:YES];
-            [_percentDrivenInteractiveTransition startInteractiveTransition];
-        }
+            [_percentDrivenInteractiveTransition updateInteractiveTransition:0];
             break;
         case UIGestureRecognizerStateChanged:
             [_percentDrivenInteractiveTransition updateInteractiveTransition:percent];
