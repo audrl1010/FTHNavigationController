@@ -3,80 +3,114 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 48;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		8561F9B01EFB5F3400FFCE88 /* FTHNavigationController.h in Headers */ = {isa = PBXBuildFile; fileRef = 8561F9AE1EFB5F3400FFCE88 /* FTHNavigationController.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		8561F9BA1EFB8FD100FFCE88 /* FTHNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 8561F9B81EFB8FD100FFCE88 /* FTHNavigationController.m */; };
+		856CD72E1F79FBBD0048479D /* FTHNavigationController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 856CD7241F79FBBD0048479D /* FTHNavigationController.framework */; };
+		856CD7331F79FBBD0048479D /* FTHNavigationControllerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 856CD7321F79FBBD0048479D /* FTHNavigationControllerTests.m */; };
+		856CD7351F79FBBD0048479D /* FTHNavigationController.h in Headers */ = {isa = PBXBuildFile; fileRef = 856CD7271F79FBBD0048479D /* FTHNavigationController.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		856CD7881F79FC840048479D /* FTHNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 856CD7861F79FC840048479D /* FTHNavigationController.m */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		856CD72F1F79FBBD0048479D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 856CD71B1F79FBBD0048479D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 856CD7231F79FBBD0048479D;
+			remoteInfo = FTHNavigationController;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
-		8561F9AB1EFB5F3400FFCE88 /* FTHNavigationController.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FTHNavigationController.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		8561F9AE1EFB5F3400FFCE88 /* FTHNavigationController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTHNavigationController.h; sourceTree = "<group>"; };
-		8561F9AF1EFB5F3400FFCE88 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		8561F9B81EFB8FD100FFCE88 /* FTHNavigationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTHNavigationController.m; sourceTree = "<group>"; };
+		856CD7241F79FBBD0048479D /* FTHNavigationController.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FTHNavigationController.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		856CD7271F79FBBD0048479D /* FTHNavigationController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTHNavigationController.h; sourceTree = "<group>"; };
+		856CD7281F79FBBD0048479D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		856CD72D1F79FBBD0048479D /* FTHNavigationControllerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FTHNavigationControllerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		856CD7321F79FBBD0048479D /* FTHNavigationControllerTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTHNavigationControllerTests.m; sourceTree = "<group>"; };
+		856CD7341F79FBBD0048479D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		856CD7861F79FC840048479D /* FTHNavigationController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTHNavigationController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		8561F9A71EFB5F3400FFCE88 /* Frameworks */ = {
+		856CD7201F79FBBD0048479D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		856CD72A1F79FBBD0048479D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				856CD72E1F79FBBD0048479D /* FTHNavigationController.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		8561F9A11EFB5F3400FFCE88 = {
+		856CD71A1F79FBBD0048479D = {
 			isa = PBXGroup;
 			children = (
-				8561F9AD1EFB5F3400FFCE88 /* FTHNavigationController */,
-				8561F9AC1EFB5F3400FFCE88 /* Products */,
+				856CD7261F79FBBD0048479D /* FTHNavigationController */,
+				856CD7311F79FBBD0048479D /* FTHNavigationControllerTests */,
+				856CD7251F79FBBD0048479D /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		8561F9AC1EFB5F3400FFCE88 /* Products */ = {
+		856CD7251F79FBBD0048479D /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8561F9AB1EFB5F3400FFCE88 /* FTHNavigationController.framework */,
+				856CD7241F79FBBD0048479D /* FTHNavigationController.framework */,
+				856CD72D1F79FBBD0048479D /* FTHNavigationControllerTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		8561F9AD1EFB5F3400FFCE88 /* FTHNavigationController */ = {
+		856CD7261F79FBBD0048479D /* FTHNavigationController */ = {
 			isa = PBXGroup;
 			children = (
-				8561F9AE1EFB5F3400FFCE88 /* FTHNavigationController.h */,
-				8561F9B81EFB8FD100FFCE88 /* FTHNavigationController.m */,
-				8561F9AF1EFB5F3400FFCE88 /* Info.plist */,
+				856CD7271F79FBBD0048479D /* FTHNavigationController.h */,
+				856CD7281F79FBBD0048479D /* Info.plist */,
+				856CD7861F79FC840048479D /* FTHNavigationController.m */,
 			);
 			path = FTHNavigationController;
+			sourceTree = "<group>";
+		};
+		856CD7311F79FBBD0048479D /* FTHNavigationControllerTests */ = {
+			isa = PBXGroup;
+			children = (
+				856CD7321F79FBBD0048479D /* FTHNavigationControllerTests.m */,
+				856CD7341F79FBBD0048479D /* Info.plist */,
+			);
+			path = FTHNavigationControllerTests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
-		8561F9A81EFB5F3400FFCE88 /* Headers */ = {
+		856CD7211F79FBBD0048479D /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8561F9B01EFB5F3400FFCE88 /* FTHNavigationController.h in Headers */,
+				856CD7351F79FBBD0048479D /* FTHNavigationController.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		8561F9AA1EFB5F3400FFCE88 /* FTHNavigationController */ = {
+		856CD7231F79FBBD0048479D /* FTHNavigationController */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 8561F9B31EFB5F3400FFCE88 /* Build configuration list for PBXNativeTarget "FTHNavigationController" */;
+			buildConfigurationList = 856CD7381F79FBBD0048479D /* Build configuration list for PBXNativeTarget "FTHNavigationController" */;
 			buildPhases = (
-				8561F9A61EFB5F3400FFCE88 /* Sources */,
-				8561F9A71EFB5F3400FFCE88 /* Frameworks */,
-				8561F9A81EFB5F3400FFCE88 /* Headers */,
-				8561F9A91EFB5F3400FFCE88 /* Resources */,
+				856CD71F1F79FBBD0048479D /* Sources */,
+				856CD7201F79FBBD0048479D /* Frameworks */,
+				856CD7211F79FBBD0048479D /* Headers */,
+				856CD7221F79FBBD0048479D /* Resources */,
 			);
 			buildRules = (
 			);
@@ -84,44 +118,73 @@
 			);
 			name = FTHNavigationController;
 			productName = FTHNavigationController;
-			productReference = 8561F9AB1EFB5F3400FFCE88 /* FTHNavigationController.framework */;
+			productReference = 856CD7241F79FBBD0048479D /* FTHNavigationController.framework */;
 			productType = "com.apple.product-type.framework";
+		};
+		856CD72C1F79FBBD0048479D /* FTHNavigationControllerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 856CD73B1F79FBBD0048479D /* Build configuration list for PBXNativeTarget "FTHNavigationControllerTests" */;
+			buildPhases = (
+				856CD7291F79FBBD0048479D /* Sources */,
+				856CD72A1F79FBBD0048479D /* Frameworks */,
+				856CD72B1F79FBBD0048479D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				856CD7301F79FBBD0048479D /* PBXTargetDependency */,
+			);
+			name = FTHNavigationControllerTests;
+			productName = FTHNavigationControllerTests;
+			productReference = 856CD72D1F79FBBD0048479D /* FTHNavigationControllerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		8561F9A21EFB5F3400FFCE88 /* Project object */ = {
+		856CD71B1F79FBBD0048479D /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0830;
-				ORGANIZATIONNAME = JIEMIAN;
+				LastUpgradeCheck = 0900;
+				ORGANIZATIONNAME = "For the Horde";
 				TargetAttributes = {
-					8561F9AA1EFB5F3400FFCE88 = {
-						CreatedOnToolsVersion = 8.3.3;
-						DevelopmentTeam = 538CZ4N2AQ;
+					856CD7231F79FBBD0048479D = {
+						CreatedOnToolsVersion = 9.0;
+						ProvisioningStyle = Automatic;
+					};
+					856CD72C1F79FBBD0048479D = {
+						CreatedOnToolsVersion = 9.0;
 						ProvisioningStyle = Automatic;
 					};
 				};
 			};
-			buildConfigurationList = 8561F9A51EFB5F3400FFCE88 /* Build configuration list for PBXProject "FTHNavigationController" */;
-			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
+			buildConfigurationList = 856CD71E1F79FBBD0048479D /* Build configuration list for PBXProject "FTHNavigationController" */;
+			compatibilityVersion = "Xcode 8.0";
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 			);
-			mainGroup = 8561F9A11EFB5F3400FFCE88;
-			productRefGroup = 8561F9AC1EFB5F3400FFCE88 /* Products */;
+			mainGroup = 856CD71A1F79FBBD0048479D;
+			productRefGroup = 856CD7251F79FBBD0048479D /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				8561F9AA1EFB5F3400FFCE88 /* FTHNavigationController */,
+				856CD7231F79FBBD0048479D /* FTHNavigationController */,
+				856CD72C1F79FBBD0048479D /* FTHNavigationControllerTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		8561F9A91EFB5F3400FFCE88 /* Resources */ = {
+		856CD7221F79FBBD0048479D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		856CD72B1F79FBBD0048479D /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -131,28 +194,46 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		8561F9A61EFB5F3400FFCE88 /* Sources */ = {
+		856CD71F1F79FBBD0048479D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8561F9BA1EFB8FD100FFCE88 /* FTHNavigationController.m in Sources */,
+				856CD7881F79FC840048479D /* FTHNavigationController.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		856CD7291F79FBBD0048479D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				856CD7331F79FBBD0048479D /* FTHNavigationControllerTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		856CD7301F79FBBD0048479D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 856CD7231F79FBBD0048479D /* FTHNavigationController */;
+			targetProxy = 856CD72F1F79FBBD0048479D /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
-		8561F9B11EFB5F3400FFCE88 /* Debug */ = {
+		856CD7361F79FBBD0048479D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
@@ -160,17 +241,22 @@
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -184,27 +270,28 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
 			name = Debug;
 		};
-		8561F9B21EFB5F3400FFCE88 /* Release */ = {
+		856CD7371F79FBBD0048479D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
@@ -212,17 +299,22 @@
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
@@ -230,20 +322,20 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
 			name = Release;
 		};
-		8561F9B41EFB5F3400FFCE88 /* Debug */ = {
+		856CD7391F79FBBD0048479D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = 538CZ4N2AQ;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -252,16 +344,18 @@
 				INFOPLIST_FILE = FTHNavigationController/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.jiemian.FTHNavigationController;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = FortheHorde.FTHNavigationController;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
-		8561F9B51EFB5F3400FFCE88 /* Release */ = {
+		856CD73A1F79FBBD0048479D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = 538CZ4N2AQ;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -270,34 +364,70 @@
 				INFOPLIST_FILE = FTHNavigationController/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.jiemian.FTHNavigationController;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = FortheHorde.FTHNavigationController;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		856CD73C1F79FBBD0048479D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 538CZ4N2AQ;
+				INFOPLIST_FILE = FTHNavigationControllerTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = FortheHorde.FTHNavigationControllerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		856CD73D1F79FBBD0048479D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 538CZ4N2AQ;
+				INFOPLIST_FILE = FTHNavigationControllerTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = FortheHorde.FTHNavigationControllerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		8561F9A51EFB5F3400FFCE88 /* Build configuration list for PBXProject "FTHNavigationController" */ = {
+		856CD71E1F79FBBD0048479D /* Build configuration list for PBXProject "FTHNavigationController" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				8561F9B11EFB5F3400FFCE88 /* Debug */,
-				8561F9B21EFB5F3400FFCE88 /* Release */,
+				856CD7361F79FBBD0048479D /* Debug */,
+				856CD7371F79FBBD0048479D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		8561F9B31EFB5F3400FFCE88 /* Build configuration list for PBXNativeTarget "FTHNavigationController" */ = {
+		856CD7381F79FBBD0048479D /* Build configuration list for PBXNativeTarget "FTHNavigationController" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				8561F9B41EFB5F3400FFCE88 /* Debug */,
-				8561F9B51EFB5F3400FFCE88 /* Release */,
+				856CD7391F79FBBD0048479D /* Debug */,
+				856CD73A1F79FBBD0048479D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		856CD73B1F79FBBD0048479D /* Build configuration list for PBXNativeTarget "FTHNavigationControllerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				856CD73C1F79FBBD0048479D /* Debug */,
+				856CD73D1F79FBBD0048479D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = 8561F9A21EFB5F3400FFCE88 /* Project object */;
+	rootObject = 856CD71B1F79FBBD0048479D /* Project object */;
 }

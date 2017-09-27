@@ -2,14 +2,15 @@
 //  AppDelegate.m
 //  Sample
 //
-//  Created by 技术部 on 2017/6/22.
-//  Copyright © 2017年 JIEMIAN. All rights reserved.
+//  Created by 技术部 on 2017/9/26.
+//  Copyright © 2017年 For the Horde. All rights reserved.
 //
 
 #import "AppDelegate.h"
 #import "ViewController.h"
 @import FTHNavigationController;
-@interface AppDelegate ()
+
+@interface AppDelegate () <UINavigationControllerDelegate>
 
 @end
 
@@ -17,14 +18,20 @@
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    UIViewController *vc = [[ViewController alloc] init];
-    FTHNavigationController *navigation = [[FTHNavigationController alloc] initWithRootViewController:vc];
+    UIViewController *vc1 = [[ViewController alloc] init];
+    FTHNavigationController *navigation = [[FTHNavigationController alloc] initWithRootViewController:vc1];
+
+    navigation.delegate = self;
+
     self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
     self.window.rootViewController = navigation;
     [self.window makeKeyAndVisible];
     return YES;
 }
 
+- (void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated {
+
+}
 
 - (void)applicationWillResignActive:(UIApplication *)application {
     // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.

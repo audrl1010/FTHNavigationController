@@ -2,74 +2,71 @@
 //  FTHNavigationController.h
 //  FTHNavigationController
 //
-//  Created by Patrick Chow on 2017/6/22.
-//  Copyright © 2017年 JIEMIAN. All rights reserved.
+//  Created by 技术部 on 2017/9/26.
+//  Copyright © 2017年 For the Horde. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>
 
-//! Project version number for FTHNavigationController.
 FOUNDATION_EXPORT double FTHNavigationControllerVersionNumber;
-
-//! Project version string for FTHNavigationController.
 FOUNDATION_EXPORT const unsigned char FTHNavigationControllerVersionString[];
-
-
-#ifdef FTHFloat
-#define FTHFloat double
-#else
-#define FTHFloat double
-#endif
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class FTHNavigationController;
+@protocol FTHNavigationControllerDelegate <NSObject>
+@optional
+- (void)navigationController:(FTHNavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated;
+- (void)navigationController:(FTHNavigationController *)navigationController didShowViewController:(UIViewController *)viewController animated:(BOOL)animated;
 
-@class FTHPercentDrivenInteractiveTransition;
+- (nullable id <UIViewControllerInteractiveTransitioning>)navigationController:(FTHNavigationController *)navigationController
+                          interactionControllerForAnimationController:(id <UIViewControllerAnimatedTransitioning>) animationController NS_AVAILABLE_IOS(7_0);
+
+- (nullable id <UIViewControllerAnimatedTransitioning>)navigationController:(FTHNavigationController *)navigationController
+                                   animationControllerForOperation:(UINavigationControllerOperation)operation
+                                                fromViewController:(UIViewController *)fromVC
+                                                  toViewController:(UIViewController *)toVC  NS_AVAILABLE_IOS(7_0);
+@end
+
 
 @interface FTHNavigationController : UIViewController
 @property(nonatomic, strong, readonly) NSArray<__kindof UIViewController *> *viewControllers;
-@property(nonatomic, weak) UIViewController *topViewController;
-@property(nonatomic, strong, readonly) UIPanGestureRecognizer *interactiveGestureRecognizer;
-@property(nonatomic, strong, readonly) FTHPercentDrivenInteractiveTransition *percentDrivenInteractiveTransition;
+@property(nonatomic, strong, readonly, nullable) UIViewController *topViewController;
+@property(nonatomic, strong, readonly) UIPanGestureRecognizer *interactiveGestureRecognizer __TVOS_PROHIBITED;
+
+@property(nonatomic, weak, nullable) id <FTHNavigationControllerDelegate> delegate;
 
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated;
-- (void)popViewControllerAnimated:(BOOL)animated;
-- (void)popToViewController:(UIViewController *)viewController animated:(BOOL)animated;
-- (void)popToRootViewControllerAnimated:(BOOL)animated;
+
+- (void)showViewController:(UIViewController *)viewController sender:(nullable id)sender;
+
+- (nullable UIViewController *)popViewControllerAnimated:(BOOL)animated;
+
+- (nullable NSArray<__kindof UIViewController *> *)popToRootViewControllerAnimated:(BOOL)animated;
 
 - (instancetype)initWithRootViewController:(UIViewController *)rootViewController NS_DESIGNATED_INITIALIZER;
-- (instancetype)initWithViewControllers:(NSArray<__kindof UIViewController *> *)viewControllers NS_DESIGNATED_INITIALIZER;
 
+@end
+
+@interface FTHNavigationController (Unavailable)
 - (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
+
 - (instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
 @end
 
-
 @interface UIViewController (FTHNavigationController)
-@property(nonatomic, weak, readonly) FTHNavigationController *fth_navigationController;
-@property(nonatomic, assign) BOOL fth_automaticallyAdjustsScrollViewInsets;
+@property(nonatomic, weak, readonly, nullable) FTHNavigationController *fth_navigationController;
+@property(nonatomic, assign) BOOL fth_automaticallyAdjustsScrollViewInsets API_DEPRECATED_WITH_REPLACEMENT("Use UIScrollView's contentInsetAdjustmentBehavior instead", ios(7.0, 11.0), tvos(7.0, 11.0));
 @end
 
 @interface UIViewController (FTHNavigationBar)
+@property(nonatomic, strong, readonly, nullable) UINavigationBar *fth_navigationBar;
 @property(nonatomic, assign) BOOL fth_navigationBarHidden;
-
-@property(nonatomic, weak) UINavigationBar *fth_navigationBar;
 @end
 
 @interface UIViewController (FTHNavigationItem)
-@property(nonatomic, weak) UINavigationItem *fth_navigationItem;
+@property(nonatomic, strong, readonly, nullable) UINavigationItem *fth_navigationItem;
 @end
-
-@protocol FTHViewControllerContextTransitioning;
-@interface FTHPercentDrivenInteractiveTransition : NSObject
-@property(nonatomic, weak) id <FTHViewControllerContextTransitioning> contextTransitioning;
-
-- (void)startInteractiveTransition;
-- (void)updateInteractiveTransition:(FTHFloat)percentComplete;
-- (void)finishInteractiveTransition;
-- (void)cancelInteractiveTransition:(FTHFloat)percentComplete;
-@end
-
-
 
 NS_ASSUME_NONNULL_END
+

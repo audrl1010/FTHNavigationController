@@ -2,12 +2,11 @@
 //  ViewController.m
 //  Sample
 //
-//  Created by 技术部 on 2017/6/22.
-//  Copyright © 2017年 JIEMIAN. All rights reserved.
+//  Created by 技术部 on 2017/9/26.
+//  Copyright © 2017年 For the Horde. All rights reserved.
 //
 
 #import "ViewController.h"
-
 @import FTHNavigationController;
 
 @interface ViewController ()
@@ -28,7 +27,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.title = [NSString stringWithFormat:@"TEST %d", self.index];
-    
+
     self.view.backgroundColor = [UIColor whiteColor];
     {
         UIScrollView *scrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds];
@@ -39,7 +38,7 @@
             [scrollView addSubview:view];
         }
         scrollView.contentSize = CGSizeMake(0, CGRectGetHeight(self.view.bounds) * 2);
-        
+
         [self.view addSubview:scrollView];
     }
     {
@@ -48,7 +47,7 @@
         [button addTarget:self action:@selector(pushAction) forControlEvents:UIControlEventTouchUpInside];
         button.backgroundColor = [UIColor colorWithRed:arc4random_uniform(255) / 255.0 green:arc4random_uniform(255) / 255.0 blue:arc4random_uniform(255) / 255.0 alpha:1];
         button.center = CGPointMake(CGRectGetMidX(self.view.bounds), 200);
-        
+
         [self.view addSubview:button];
     }
     {
@@ -57,13 +56,13 @@
         [button addTarget:self action:@selector(popAction) forControlEvents:UIControlEventTouchUpInside];
         button.backgroundColor = [UIColor colorWithRed:arc4random_uniform(255) / 255.0 green:arc4random_uniform(255) / 255.0 blue:arc4random_uniform(255) / 255.0 alpha:1];
         button.center = CGPointMake(CGRectGetMidX(self.view.bounds), 400);
-        
+
         [self.view addSubview:button];
     }
     {
         self.fth_navigationItem.rightBarButtonItems = @[[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(didSelectedRightBarButtonItem)], [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSave target:self action:@selector(didSelectedRightBarButtonItem)]];
     }
-    
+
     //    {
     //        UIView *view = [[UIView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.view.bounds), 100)];
     //        view.backgroundColor = [UIColor colorWithRed:arc4random_uniform(255)/255.0 green:arc4random_uniform(255)/255.0 blue:arc4random_uniform(255)/255.0 alpha:1];
@@ -78,31 +77,42 @@
 
 - (void)willMoveToParentViewController:(nullable UIViewController *)parent {
     [super willMoveToParentViewController:parent];
+    NSLog(@"willMoveToParentViewController: %@, index: %d",parent,self.index);
 }
 
 - (void)didMoveToParentViewController:(nullable UIViewController *)parent {
     [super didMoveToParentViewController:parent];
+    NSLog(@"didMoveToParentViewController: %@, index: %d",parent,self.index);
 }
 
 - (void)pushAction {
     ViewController *vc = [[ViewController alloc] init];
     vc.index = self.index + 1;
-    [self.fth_navigationController pushViewController:vc animated:YES];
-    //    [self presentViewController:vc animated:YES completion:nil];
-    //    [self.fth_navigationController presentViewController:vc animated:YES completion:nil];
+
+
+    if (self.index == 2) {
+        ViewController *vc = [[ViewController alloc] init];
+        FTHNavigationController *nav = [[FTHNavigationController alloc] initWithRootViewController:vc];
+        nav.modalPresentationStyle = UIModalPresentationFormSheet;
+        [self presentViewController:nav animated:YES completion:nil];
+    }else{
+        [self.fth_navigationController pushViewController:vc animated:YES];
+    }
 }
 
-//- (UIStatusBarStyle)preferredStatusBarStyle {
-//    if (self.index % 2) {
-//        return UIStatusBarStyleDefault;
-//    }
-//    return UIStatusBarStyleLightContent;
-//}
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    if (self.index % 2) {
+        return UIStatusBarStyleDefault;
+    }
+    return UIStatusBarStyleLightContent;
+}
+
+- (UIStatusBarAnimation)preferredStatusBarUpdateAnimation {
+    return UIStatusBarAnimationNone;
+}
 
 - (void)popAction {
-    //    [self.fth_navigationController popViewControllerAnimated:YES];
-    [self.fth_navigationController popToRootViewControllerAnimated:YES];
-    
+    [self.fth_navigationController popViewControllerAnimated:YES];
 }
 
 
