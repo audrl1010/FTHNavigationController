@@ -18,7 +18,9 @@ typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
 
 @interface FTHViewControllerContextTransitioning : NSObject <UIViewControllerContextTransitioning> {
     CFTimeInterval _pausedTime;
+    CFTimeInterval _duration;
 }
+
 @property(nonatomic, strong) UIView *containerView;
 @property(nonatomic, assign, getter=isAnimated) BOOL animated;
 @property(nonatomic, assign, getter=isInteractive) BOOL interactive;
@@ -35,8 +37,9 @@ typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
 - (void)updateInteractiveTransition:(CGFloat)percentComplete {
     if (percentComplete == 0) {
         [self pauseLayer:_containerView.layer];
+        _duration = [_containerView.subviews[0].layer animationForKey:@"ForTheHorde.transition.to"].duration;
     } else {
-        _containerView.layer.timeOffset = _pausedTime + _containerView.subviews[0].layer.duration * percentComplete;
+        _containerView.layer.timeOffset = _pausedTime + _duration * percentComplete;
     }
 }
 
@@ -123,9 +126,10 @@ typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
 
 @end
 
-@interface FTHViewControllerAnimatedTransitioning: NSObject <UIViewControllerAnimatedTransitioning,CAAnimationDelegate> {
+@interface FTHViewControllerAnimatedTransitioning : NSObject <UIViewControllerAnimatedTransitioning, CAAnimationDelegate> {
     UINavigationControllerOperation _operation;
 }
+
 - (instancetype)initWithOperation:(UINavigationControllerOperation)operation;
 @end
 
@@ -213,23 +217,24 @@ typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
         callback(anim, flag);
     }
 }
-
 @end
 
 @interface FTHPercentDrivenInteractiveTransition : NSObject <UIViewControllerInteractiveTransitioning> {
     id <UIViewControllerAnimatedTransitioning> _animator;
-    id <UIViewControllerContextTransitioning>  _transitionContext;
+    id <UIViewControllerContextTransitioning> _transitionContext;
 }
 
 - (instancetype)initWithAnimator:(id <UIViewControllerAnimatedTransitioning>)animator;
 
+- (void)pauseInteractiveTransition NS_AVAILABLE_IOS(10_0);
 - (void)updateInteractiveTransition:(CGFloat)percentComplete;
 - (void)finishInteractiveTransition;
+- (void)cancelInteractiveTransition;
 @end
 
 @implementation FTHPercentDrivenInteractiveTransition
 - (instancetype)initWithAnimator:(id <UIViewControllerAnimatedTransitioning>)animator {
-      self = [super init];
+    self = [super init];
     if (self) {
         _animator = animator;
     }
@@ -250,10 +255,16 @@ typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
     [_transitionContext finishInteractiveTransition];
 }
 
+- (void)pauseInteractiveTransition {
+    [_transitionContext pauseInteractiveTransition];
+}
+
+- (void)cancelInteractiveTransition {
+    [_transitionContext cancelInteractiveTransition];
+}
 @end
 
 @interface FTHNavigationController () {
-    NSPointerArray *_viewControllerStack;
     UIPanGestureRecognizer *_interactiveGestureRecognizer;
     FTHPercentDrivenInteractiveTransition *_percentDrivenInteractiveTransition;
 
@@ -263,6 +274,10 @@ typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
         unsigned int animationControllerForOperation:1;
         unsigned int interactionControllerForAnimationController:1;
     } _delegateFlags;
+
+#if DEBUG
+    NSPointerArray *_viewControllerStack;
+#endif
 }
 @end
 
@@ -271,8 +286,11 @@ typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
 - (instancetype)initWithRootViewController:(UIViewController *)rootViewController {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
+#if DEBUG
         _viewControllerStack = [NSPointerArray weakObjectsPointerArray];
         [_viewControllerStack addPointer:(__bridge void *) rootViewController];
+#endif
+
         [rootViewController willMoveToParentViewController:self];
         [self addChildViewController:rootViewController];
     }
@@ -324,12 +342,13 @@ typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
 }
 
 #pragma mark Public Method
-
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated {
     UIViewController *fromViewController = self.topViewController;
     UIViewController *toViewController = viewController;
 
+#if DEBUG
     [_viewControllerStack addPointer:(__bridge void *) toViewController];
+#endif
 
 //    [toViewController willMoveToParentViewController:self];
     [self addChildViewController:toViewController];
@@ -491,10 +510,12 @@ typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
 
 - (void)addChildViewController:(UIViewController *)childController {
     [super addChildViewController:childController];
-    //
+
+#if DEBUG
     if (![_viewControllerStack.allObjects containsObject:childController]) {
         FTHAssertNotSupported()
     }
+#endif
 }
 
 - (void)didReceiveMemoryWarning {
@@ -505,7 +526,7 @@ typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
 @end
 
 @implementation UIViewController (FTHNavigationController)
-- (FTHNavigationController *)fth_navigationController {
+- (nullable FTHNavigationController *)fth_navigationController {
     UIViewController *parentViewController = self.parentViewController;
     while (parentViewController && ![parentViewController isKindOfClass:[FTHNavigationController class]]) {
         parentViewController = parentViewController.parentViewController;

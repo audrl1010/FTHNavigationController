@@ -2,7 +2,7 @@
 //  SampleTests.m
 //  SampleTests
 //
-//  Created by 技术部 on 2017/9/26.
+//  Created by Patrick Chow on 2017/9/26.
 //  Copyright © 2017年 For the Horde. All rights reserved.
 //
 
