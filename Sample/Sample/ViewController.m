@@ -113,7 +113,11 @@
 }
 
 - (void)popAction {
-    [self.fth_navigationController popViewControllerAnimated:YES];
+    if (self.index == 3) {
+        [self.fth_navigationController popToRootViewControllerAnimated:YES];
+    } else {
+        [self.fth_navigationController popViewControllerAnimated:YES];
+    }
 }
 
 

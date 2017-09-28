@@ -106,6 +106,8 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
         [toViewController endAppearanceTransition];
         [fromViewController endAppearanceTransition];
     }
+    // update status bar appearance
+    [parentViewController setNeedsStatusBarAppearanceUpdate];
     // release viewControllerDict
     self.viewControllerDict = nil;
     
@@ -345,8 +347,20 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
     [self.view addGestureRecognizer:_interactiveGestureRecognizer];
 }
 
-#pragma mark Getter & Setter
+#pragma mark -
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    return self.topViewController.preferredStatusBarStyle;
+}
 
+- (BOOL)prefersStatusBarHidden {
+    return self.topViewController.prefersStatusBarHidden;
+}
+
+- (UIStatusBarAnimation)preferredStatusBarUpdateAnimation {
+    return self.topViewController.preferredStatusBarUpdateAnimation;
+}
+
+#pragma mark Getter & Setter
 - (NSArray<__kindof UIViewController *> *)viewControllers {
     return self.childViewControllers;
 }
@@ -405,10 +419,20 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
 }
 
 - (nullable NSArray<__kindof UIViewController *> *)popToRootViewControllerAnimated:(BOOL)animated {
-    return nil;
+    NSArray<__kindof UIViewController *> *viewControllers = [self.viewControllers subarrayWithRange:NSMakeRange(1, self.viewControllers.count - 2)];
+    for (NSUInteger i = 0; i < viewControllers.count; i ++) {
+        UIViewController *viewController = viewControllers[i];
+        [viewController removeFromParentViewController];
+    }
+    [self _popViewControllerAnimated:animated interactive:NO];
+    return viewControllers;
 }
 
 #pragma mark Private Method
+
+- (UIViewController *)viewControllerAtIndex:(NSUInteger)index {
+    return self.viewControllers[index];
+}
 
 - (nullable UIViewController *)viewControllerAbove:(UIViewController *)viewController {
     unsigned long count = self.viewControllers.count;
@@ -544,8 +568,14 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
 
 #pragma mark -
 
-- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
-    return YES;
+- (BOOL)gestureRecognizerShouldBegin:(UIPanGestureRecognizer *)gestureRecognizer {
+//    if (self.contextTransitioning.animating) return NO;
+    if (self.viewControllers.count == 1) return NO;
+    CGPoint translate = [gestureRecognizer translationInView:self.view];
+    if (translate.x <= 0) {
+        return NO;
+    }
+    return fabs(translate.x) > fabs(translate.y);
 }
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldBeRequiredToFailByGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
