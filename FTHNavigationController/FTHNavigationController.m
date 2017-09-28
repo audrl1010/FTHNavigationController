@@ -55,16 +55,16 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
     CALayer *containerLayer = _containerView.layer;
     CADisplayLink *displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(handleDisplayLink)];
     [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-
-    _completeSpeed = _containerView.layer.timeOffset - _pausedTime;
+    
+    _completeSpeed = containerLayer.timeOffset - _pausedTime;
     // 12 times
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t) (0.2f * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [displayLink invalidate];
-
+        
         for (UIView *subView in _containerView.subviews) {
             [subView.layer removeAllAnimations];
         }
-
+        
         containerLayer.speed = 1.0;
         containerLayer.timeOffset = 0;
     });
@@ -82,7 +82,7 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
     UIViewController *fromViewController = [self viewControllerForKey:UITransitionContextFromViewControllerKey];
     UIViewController *parentViewController = [self viewControllerForKey:FTHTransitionContextParentViewControllerKey];
     UIViewController *toViewController = [self viewControllerForKey:UITransitionContextToViewControllerKey];
-
+    
     if (didComplete) {
         if (fromViewController.view) {
             [fromViewController.view removeFromSuperview];
@@ -108,7 +108,7 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
     }
     // release viewControllerDict
     self.viewControllerDict = nil;
-
+    
     if (self.didCompleteTransition) {
         self.didCompleteTransition(didComplete);
         self.didCompleteTransition = nil;
@@ -128,8 +128,7 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
 }
 
 - (CGAffineTransform)targetTransform {
-    CGAffineTransform result;
-    return result;
+    return CGAffineTransformIdentity;
 }
 
 - (CGRect)initialFrameForViewController:(UIViewController *)vc {
@@ -155,7 +154,6 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
     CFTimeInterval timeSincePause = [layer convertTime:CACurrentMediaTime() fromLayer:nil] - pausedTime;
     layer.beginTime = timeSincePause;
 }
-
 @end
 
 @interface FTHViewControllerAnimatedTransitioning : NSObject <UIViewControllerAnimatedTransitioning, CAAnimationDelegate> {
@@ -189,7 +187,7 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
 - (void)_pushAnimateTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
     UIView *toView = [transitionContext viewForKey:UITransitionContextToViewKey];
     UIView *fromView = [transitionContext viewForKey:UITransitionContextFromViewKey];
-
+    
     CABasicAnimation *toAnimation = [CABasicAnimation animationWithKeyPath:@"position.x"];
     toAnimation.delegate = self;
     toAnimation.duration = [self transitionDuration:transitionContext];
@@ -197,14 +195,14 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
     toAnimation.fromValue = @(toView.layer.position.x + CGRectGetWidth(toView.bounds));
     toAnimation.removedOnCompletion = YES;
     toAnimation.toValue = @(toView.layer.position.x);
-
+    
     FTHAnimationDidStopCallback callback = ^(CAAnimation *animation, BOOL finished) {
         [transitionContext completeTransition:finished];
     };
     [toAnimation setValue:callback forUndefinedKey:@"callback"];
-
+    
     [toView.layer addAnimation:toAnimation forKey:@"ForTheHorde.transition.to"];
-
+    
     CABasicAnimation *fromAnimation = [CABasicAnimation animationWithKeyPath:@"position.x"];
     fromAnimation.duration = [self transitionDuration:transitionContext];
     fromAnimation.fillMode = kCAFillModeBoth;
@@ -217,7 +215,7 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
 - (void)_popAnimateTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
     UIView *toView = [transitionContext viewForKey:UITransitionContextToViewKey];
     UIView *fromView = [transitionContext viewForKey:UITransitionContextFromViewKey];
-
+    
     CABasicAnimation *fromAnimation = [CABasicAnimation animationWithKeyPath:@"position.x"];
     fromAnimation.delegate = self;
     fromAnimation.duration = [self transitionDuration:transitionContext];
@@ -225,21 +223,21 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
     fromAnimation.fromValue = @(fromView.layer.position.x);
     fromAnimation.removedOnCompletion = NO;
     fromAnimation.toValue = @(fromView.layer.position.x + CGRectGetWidth(fromView.bounds));
-
+    
     FTHAnimationDidStopCallback callback = ^(CAAnimation *animation, BOOL finished) {
         [transitionContext completeTransition:finished];
     };
     [fromAnimation setValue:callback forUndefinedKey:@"callback"];
-
+    
     [fromView.layer addAnimation:fromAnimation forKey:@"ForTheHorde.transition.from"];
-
+    
     CABasicAnimation *toAnimation = [CABasicAnimation animationWithKeyPath:@"position.x"];
     toAnimation.duration = [self transitionDuration:transitionContext];
     toAnimation.fillMode = kCAFillModeBoth;
     toAnimation.fromValue = @(toView.layer.position.x - CGRectGetMidX(toView.bounds));
     toAnimation.removedOnCompletion = YES;
     toAnimation.toValue = @(toView.layer.position.x);
-
+    
     [toView.layer addAnimation:toAnimation forKey:@"ForTheHorde.transition.to"];
 }
 
@@ -247,7 +245,6 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
     FTHAnimationDidStopCallback callback = [anim valueForUndefinedKey:@"callback"];
     if (callback) {
         callback(anim, flag);
-        callback = nil;
     }
 }
 @end
@@ -279,7 +276,7 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
 
 - (void)startInteractiveTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
     _transitionContext = transitionContext;
-
+    
     [_animator animateTransition:transitionContext];
 }
 
@@ -303,14 +300,14 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
 @interface FTHNavigationController () <UIGestureRecognizerDelegate> {
     UIPanGestureRecognizer *_interactiveGestureRecognizer;
     FTHPercentDrivenInteractiveTransition *_percentDrivenInteractiveTransition;
-
+    
     struct {
         unsigned int willShowViewController:1;
         unsigned int didShowViewController:1;
         unsigned int animationControllerForOperation:1;
         unsigned int interactionControllerForAnimationController:1;
     } _delegateFlags;
-
+    
 #if DEBUG
     NSPointerArray *_viewControllerStack;
 #endif
@@ -333,16 +330,16 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-
+    
     UIViewController *topViewController = self.topViewController;
     UIView *topView = topViewController.view;
-
+    
     topView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-
+    
     [self.view addSubview:topView];
     [topViewController didMoveToParentViewController:self];
     [self addNavigationBarIfNeededByViewController:topViewController];
-
+    
     _interactiveGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handelPanGesture:)];
     _interactiveGestureRecognizer.delegate = self;
     [self.view addGestureRecognizer:_interactiveGestureRecognizer];
@@ -365,7 +362,7 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
 - (void)setDelegate:(id <FTHNavigationControllerDelegate>)delegate {
     if (delegate) {
         _delegate = delegate;
-
+        
         _delegateFlags.animationControllerForOperation = [_delegate respondsToSelector:@selector(navigationController:animationControllerForOperation:fromViewController:toViewController:)];
         _delegateFlags.willShowViewController = [_delegate respondsToSelector:@selector(navigationController:willShowViewController:animated:)];
         _delegateFlags.didShowViewController = [_delegate respondsToSelector:@selector(navigationController:didShowViewController:animated:)];
@@ -381,21 +378,21 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated {
     UIViewController *fromViewController = self.topViewController;
     UIViewController *toViewController = viewController;
-
+    
 #if DEBUG
     [_viewControllerStack addPointer:(__bridge void *) toViewController];
 #endif
-
+    
     [self addChildViewController:toViewController];
     UIView *toView = toViewController.view;
     toView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-
+    
     [toViewController beginAppearanceTransition:YES animated:animated];
     [fromViewController beginAppearanceTransition:NO animated:animated];
-
+    
     [self.view addSubview:toView];
     [self addNavigationBarIfNeededByViewController:toViewController];
-
+    
     [self beginPerformAnimationOperation:UINavigationControllerOperationPush fromViewController:fromViewController toViewController:toViewController animated:animated interactive:NO];
 }
 
@@ -423,29 +420,47 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
 }
 
 - (void)setViewControllers:(NSArray<__kindof UIViewController *> *)viewControllers {
-
+    
 };
 
 - (void)addNavigationBarIfNeededByViewController:(UIViewController *)viewController {
     if (viewController.fth_navigationBarHidden) return;
-
+    
     UINavigationBar *navigationBar = viewController.fth_navigationBar;
     UINavigationItem *navigationItem = viewController.fth_navigationItem;
     [navigationBar pushNavigationItem:navigationItem animated:NO];
-
+    
     [viewController.view addSubview:navigationBar];
     [self constraintNavigationBar:navigationBar onViewController:viewController];
+    
+    if (viewController.fth_automaticallyAdjustsScrollViewInsets) {
+        UIScrollView *firstView = viewController.view.subviews.firstObject;
+        if ([firstView isKindOfClass:[UIScrollView class]]) {
+            UIEdgeInsets contentInset = firstView.contentInset;
+            CGPoint contentOffset = firstView.contentOffset;
+            if (@available(iOS 11.0, *)) {
+                contentInset.top += navigationBar.intrinsicContentSize.height;
+                contentOffset.y -= navigationBar.intrinsicContentSize.height;
+            } else {
+                contentInset.top += 64;
+                contentOffset.y -= navigationBar.intrinsicContentSize.height;
+            }
+            [firstView setScrollIndicatorInsets:contentInset];
+            [firstView setContentInset:contentInset];
+            [firstView setContentOffset:contentOffset animated:NO];
+        }
+    }
 }
 
 - (void)constraintNavigationBar:(UINavigationBar *)navigationBar onViewController:(UIViewController *)viewController {
     navigationBar.translatesAutoresizingMaskIntoConstraints = NO;
     NSArray *constraint;
-    if ([NSProcessInfo.processInfo isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion) {11, 0, 0}]) {
+    if (@available(iOS 11.0, *)) {
         UILayoutGuide *safeAreaLayoutGuide = viewController.view.safeAreaLayoutGuide;
         NSLayoutConstraint *a = [navigationBar.widthAnchor constraintEqualToAnchor:viewController.view.widthAnchor];
         NSLayoutConstraint *b = [navigationBar.centerXAnchor constraintEqualToAnchor:viewController.view.centerXAnchor constant:0];
         NSLayoutConstraint *c = [navigationBar.topAnchor constraintEqualToAnchor:safeAreaLayoutGuide.topAnchor constant:0];
-
+        
         constraint = @[a, b, c];
     } else {
         NSLayoutConstraint *a = [NSLayoutConstraint constraintWithItem:navigationBar attribute:NSLayoutAttributeLeading relatedBy:NSLayoutRelationEqual toItem:viewController.view attribute:NSLayoutAttributeLeading multiplier:1 constant:0];
@@ -462,16 +477,16 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
         return toViewController;
     }
     UIViewController *fromViewController = self.topViewController;
-
+    
     [fromViewController willMoveToParentViewController:nil];
-
+    
     [toViewController beginAppearanceTransition:YES animated:animated];
     [fromViewController beginAppearanceTransition:NO animated:animated];
-
+    
     [self.view insertSubview:toViewController.view belowSubview:fromViewController.view];
-
+    
     [self beginPerformAnimationOperation:UINavigationControllerOperationPop fromViewController:fromViewController toViewController:toViewController animated:animated interactive:interactive];
-
+    
     return toViewController;
 }
 
@@ -484,15 +499,15 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
     transitionContext.operation = operation;
     transitionContext.transitionWasCancelled = NO;
     transitionContext.viewControllerDict = @{
-            UITransitionContextToViewControllerKey: toViewController,
-            UITransitionContextFromViewControllerKey: fromViewController,
-            FTHTransitionContextParentViewControllerKey: self
-    };
-
+                                             UITransitionContextToViewControllerKey: toViewController,
+                                             UITransitionContextFromViewControllerKey: fromViewController,
+                                             FTHTransitionContextParentViewControllerKey: self
+                                             };
+    
     if (_delegateFlags.willShowViewController) {
         [self.delegate navigationController:self willShowViewController:toViewController animated:animated];
     }
-
+    
     if (_delegateFlags.didShowViewController) {
         transitionContext.didCompleteTransition = ^(BOOL transitionWasCancelled) {
             if (!transitionWasCancelled) {
@@ -500,13 +515,13 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
             }
         };
     }
-
+    
     if (_delegateFlags.animationControllerForOperation) {
         id <UIViewControllerAnimatedTransitioning> animator = [self.delegate navigationController:self
                                                                   animationControllerForOperation:operation
                                                                                fromViewController:fromViewController
                                                                                  toViewController:toViewController];
-
+        
         if (_delegateFlags.interactionControllerForAnimationController && interactive) {
             id <UIViewControllerInteractiveTransitioning> interactiveAnimator = [self.delegate navigationController:self interactionControllerForAnimationController:animator];
             [interactiveAnimator startInteractiveTransition:transitionContext];
@@ -518,7 +533,7 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
             FTHViewControllerAnimatedTransitioning *animator = [[FTHViewControllerAnimatedTransitioning alloc] initWithOperation:operation];
             FTHPercentDrivenInteractiveTransition *interactiveAnimator = [[FTHPercentDrivenInteractiveTransition alloc] initWithAnimator:animator];
             [interactiveAnimator startInteractiveTransition:transitionContext];
-
+            
             _percentDrivenInteractiveTransition = interactiveAnimator;
         } else {
             FTHViewControllerAnimatedTransitioning *animator = [[FTHViewControllerAnimatedTransitioning alloc] initWithOperation:operation];
@@ -540,7 +555,7 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
 - (void)handelPanGesture:(UIPanGestureRecognizer *)recognizer {
     CGFloat translate = [recognizer translationInView:self.view].x;
     CGFloat percent = translate / CGRectGetWidth(self.view.bounds);
-
+    
     switch (recognizer.state) {
         case UIGestureRecognizerStateBegan:
             [self _popViewControllerAnimated:YES interactive:YES];
@@ -565,7 +580,7 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
 
 - (void)addChildViewController:(UIViewController *)childController {
     [super addChildViewController:childController];
-
+    
 #if DEBUG
     if (![_viewControllerStack.allObjects containsObject:childController]) {
         FTHAssertNotSupported()
@@ -587,6 +602,14 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
     }
     return (FTHNavigationController *) parentViewController;
 }
+
+- (BOOL)fth_automaticallyAdjustsScrollViewInsets {
+    return [objc_getAssociatedObject(self, _cmd) boolValue];
+}
+
+- (void)setFth_automaticallyAdjustsScrollViewInsets:(BOOL)fth_automaticallyAdjustsScrollViewInsets {
+    objc_setAssociatedObject(self, @selector(fth_automaticallyAdjustsScrollViewInsets), @(fth_automaticallyAdjustsScrollViewInsets), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
 @end
 
 @interface FTHNavigationBarDelegateProxy: NSObject <UINavigationBarDelegate> {
@@ -604,7 +627,7 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
 - (void)setDelegate:(id <UINavigationBarDelegate>)delegate {
     if (delegate) {
         _delegate = delegate;
-
+        
         _delegateFlags.shouldPopItem = [_delegate respondsToSelector:@selector(navigationBar:shouldPopItem:)];
         _delegateFlags.didPopItem = [_delegate respondsToSelector:@selector(navigationBar:didPopItem:)];
         _delegateFlags.didPushItem = [_delegate respondsToSelector:@selector(navigationBar:didPushItem:)];
@@ -662,13 +685,26 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
     return self;
 }
 
+- (CGSize)intrinsicContentSize {
+    if (@available(iOS 11.0, *)) {
+        if (self.prefersLargeTitles) {
+            UIFont *largeTitleFont = self.largeTitleTextAttributes[NSFontAttributeName];
+            if (largeTitleFont) {
+                return CGSizeMake(0, 44 + round(largeTitleFont.lineHeight));
+            }
+            return CGSizeMake(0, 96);
+        }
+    }
+    return CGSizeMake(0, 44);
+}
+
 - (void)setDelegate:(id <UINavigationBarDelegate>)delegate {
     if (delegate) {
         FTHNavigationBarDelegateProxy *delegateProxy = [[FTHNavigationBarDelegateProxy alloc] init];
         delegateProxy.delegate = delegate;
-
+        
         objc_setAssociatedObject(self, _cmd, delegateProxy, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-
+        
         [super setDelegate:delegateProxy];
     } else {
         [super setDelegate:nil];
@@ -686,14 +722,14 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
     UINavigationBar *navigationBar = objc_getAssociatedObject(self, _cmd);
     if (!navigationBar) {
         // iOS 11
-//        if ([NSProcessInfo.processInfo isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion) {11, 0, 0}]) {
-//            navigationBar = [[FTHNavigationBarInternal alloc]
-//                    initWithFrame:CGRectZero];
-//        } else {
-//            navigationBar = [[UINavigationBar alloc] initWithFrame:CGRectZero];
-//        }
+        //        if ([NSProcessInfo.processInfo isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion) {11, 0, 0}]) {
+        //            navigationBar = [[FTHNavigationBarInternal alloc]
+        //                    initWithFrame:CGRectZero];
+        //        } else {
+        //            navigationBar = [[UINavigationBar alloc] initWithFrame:CGRectZero];
+        //        }
         navigationBar = [[FTHNavigationBarInternal alloc]
-                    initWithFrame:CGRectZero];
+                         initWithFrame:CGRectZero];
         objc_setAssociatedObject(self, _cmd, navigationBar, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
     return navigationBar;
@@ -713,7 +749,7 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
     UINavigationItem *item = objc_getAssociatedObject(self, _cmd);
     if (!item) {
         item = [[UINavigationItem alloc] initWithTitle:self.title];
-
+        
         objc_setAssociatedObject(self, _cmd, item, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
     return item;

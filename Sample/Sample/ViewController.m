@@ -61,6 +61,9 @@
     }
     {
         self.fth_navigationItem.rightBarButtonItems = @[[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(didSelectedRightBarButtonItem)], [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSave target:self action:@selector(didSelectedRightBarButtonItem)]];
+        if (@available(iOS 11.0, *)) {
+            self.fth_navigationItem.largeTitleDisplayMode = UINavigationItemLargeTitleDisplayModeAlways;
+        }
     }
 
     //    {
@@ -68,7 +71,14 @@
     //        view.backgroundColor = [UIColor colorWithRed:arc4random_uniform(255)/255.0 green:arc4random_uniform(255)/255.0 blue:arc4random_uniform(255)/255.0 alpha:1];
     //        [self.view addSubview:view];
     //    }
+    if (@available(iOS 11.0, *)) {
+//        self.fth_navigationBar.prefersLargeTitles = YES;
+//        self.fth_navigationBar.largeTitleTextAttributes = @{
+//                                                            NSFontAttributeName:[UIFont systemFontOfSize:80]
+//                                                            };
+    }
     [self.fth_navigationBar setBarTintColor:[UIColor colorWithRed:arc4random_uniform(255) / 255.0 green:arc4random_uniform(255) / 255.0 blue:arc4random_uniform(255) / 255.0 alpha:1]];
+    self.fth_automaticallyAdjustsScrollViewInsets = YES;
 }
 
 - (void)didSelectedRightBarButtonItem {
@@ -88,16 +98,7 @@
 - (void)pushAction {
     ViewController *vc = [[ViewController alloc] init];
     vc.index = self.index + 1;
-
-
-    if (self.index == 2) {
-        ViewController *vc = [[ViewController alloc] init];
-        FTHNavigationController *nav = [[FTHNavigationController alloc] initWithRootViewController:vc];
-        nav.modalPresentationStyle = UIModalPresentationFormSheet;
-        [self presentViewController:nav animated:YES completion:nil];
-    }else{
-        [self.fth_navigationController pushViewController:vc animated:YES];
-    }
+    [self.fth_navigationController pushViewController:vc animated:YES];
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
