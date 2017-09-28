@@ -548,7 +548,10 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
         
         if (_delegateFlags.interactionControllerForAnimationController && interactive) {
             id <UIViewControllerInteractiveTransitioning> interactiveAnimator = [self.delegate navigationController:self interactionControllerForAnimationController:animator];
+            FTHPercentDrivenInteractiveTransition *driven = [[FTHPercentDrivenInteractiveTransition alloc] initWithAnimator:animator];
             [interactiveAnimator startInteractiveTransition:transitionContext];
+        
+            _percentDrivenInteractiveTransition = driven;
         } else {
             [animator animateTransition:transitionContext];
         }
@@ -567,9 +570,7 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
 }
 
 #pragma mark -
-
 - (BOOL)gestureRecognizerShouldBegin:(UIPanGestureRecognizer *)gestureRecognizer {
-//    if (self.contextTransitioning.animating) return NO;
     if (self.viewControllers.count == 1) return NO;
     CGPoint translate = [gestureRecognizer translationInView:self.view];
     if (translate.x <= 0) {
