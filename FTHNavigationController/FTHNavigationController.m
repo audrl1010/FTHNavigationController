@@ -548,7 +548,7 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
         
         if (_delegateFlags.interactionControllerForAnimationController && interactive) {
             id <UIViewControllerInteractiveTransitioning> interactiveAnimator = [self.delegate navigationController:self interactionControllerForAnimationController:animator];
-            FTHPercentDrivenInteractiveTransition *driven = [[FTHPercentDrivenInteractiveTransition alloc] initWithAnimator:animator];
+            FTHPercentDrivenInteractiveTransition *driven = [[FTHPercentDrivenInteractiveTransition alloc] initWithAnimator:nil];
             [interactiveAnimator startInteractiveTransition:transitionContext];
         
             _percentDrivenInteractiveTransition = driven;
