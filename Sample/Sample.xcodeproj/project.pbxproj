@@ -15,6 +15,8 @@
 		856CD76F1F79FC480048479D /* SampleUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 856CD76E1F79FC480048479D /* SampleUITests.m */; };
 		856CD78E1F7A15710048479D /* FTHNavigationController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 856CD7821F79FC540048479D /* FTHNavigationController.framework */; };
 		856CD78F1F7A15710048479D /* FTHNavigationController.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 856CD7821F79FC540048479D /* FTHNavigationController.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		85F586C41F7CD410004FAF5A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 85F586C01F7CD410004FAF5A /* Main.storyboard */; };
+		85F586C51F7CD410004FAF5A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 85F586C21F7CD410004FAF5A /* LaunchScreen.storyboard */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -85,6 +87,8 @@
 		856CD76E1F79FC480048479D /* SampleUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SampleUITests.m; sourceTree = "<group>"; };
 		856CD7701F79FC480048479D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		856CD77C1F79FC540048479D /* FTHNavigationController.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = FTHNavigationController.xcodeproj; path = ../FTHNavigationController.xcodeproj; sourceTree = "<group>"; };
+		85F586C11F7CD410004FAF5A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		85F586C31F7CD410004FAF5A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -137,6 +141,8 @@
 		856CD7491F79FC480048479D /* Sample */ = {
 			isa = PBXGroup;
 			children = (
+				85F586C21F7CD410004FAF5A /* LaunchScreen.storyboard */,
+				85F586C01F7CD410004FAF5A /* Main.storyboard */,
 				856CD74A1F79FC480048479D /* AppDelegate.h */,
 				856CD74B1F79FC480048479D /* AppDelegate.m */,
 				856CD74D1F79FC480048479D /* ViewController.h */,
@@ -306,7 +312,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				85F586C51F7CD410004FAF5A /* LaunchScreen.storyboard in Resources */,
 				856CD7541F79FC480048479D /* Assets.xcassets in Resources */,
+				85F586C41F7CD410004FAF5A /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -372,6 +380,25 @@
 			targetProxy = 856CD7901F7A15710048479D /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		85F586C01F7CD410004FAF5A /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				85F586C11F7CD410004FAF5A /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		85F586C21F7CD410004FAF5A /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				85F586C31F7CD410004FAF5A /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		856CD7711F79FC480048479D /* Debug */ = {
@@ -485,7 +512,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 538CZ4N2AQ;
 				INFOPLIST_FILE = Sample/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = FortheHorde.Sample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -500,7 +527,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 538CZ4N2AQ;
 				INFOPLIST_FILE = Sample/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = FortheHorde.Sample;
 				PRODUCT_NAME = "$(TARGET_NAME)";

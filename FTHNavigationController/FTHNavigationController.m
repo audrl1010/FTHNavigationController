@@ -677,7 +677,7 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
 }
 
 - (UIBarPosition)barPosition {
-    return UIBarPositionTop;
+    return UIBarPositionTopAttached;
 }
 @end
 
