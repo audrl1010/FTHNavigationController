@@ -443,7 +443,7 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
                 contentOffset.y -= navigationBar.intrinsicContentSize.height;
             } else {
                 contentInset.top += 64;
-                contentOffset.y -= navigationBar.intrinsicContentSize.height;
+                contentOffset.y -= 64;
             }
             [firstView setScrollIndicatorInsets:contentInset];
             [firstView setContentInset:contentInset];
