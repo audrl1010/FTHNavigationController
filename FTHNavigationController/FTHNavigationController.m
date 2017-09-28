@@ -16,9 +16,12 @@ static NSString *const FTHTransitionContextParentViewControllerKey = @"kFTHTrans
 
 typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
 
+typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasCancelled);
+
 @interface FTHViewControllerContextTransitioning : NSObject <UIViewControllerContextTransitioning> {
     CFTimeInterval _pausedTime;
     CFTimeInterval _duration;
+    CFTimeInterval _completeSpeed;
 }
 
 @property(nonatomic, strong) UIView *containerView;
@@ -27,6 +30,7 @@ typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
 @property(nonatomic, assign) BOOL transitionWasCancelled;
 @property(nonatomic, copy) NSDictionary *viewControllerDict;
 @property(nonatomic, assign) UINavigationControllerOperation operation;
+@property(nonatomic, copy) FTHContextTransitioningDidCompleteTransition didCompleteTransition;
 @end
 
 @implementation FTHViewControllerContextTransitioning
@@ -48,19 +52,38 @@ typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
 }
 
 - (void)cancelInteractiveTransition {
+    CALayer *containerLayer = _containerView.layer;
+    CADisplayLink *displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(handleDisplayLink)];
+    [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
 
+    _completeSpeed = _containerView.layer.timeOffset - _pausedTime;
+    // 12 times
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t) (0.2f * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [displayLink invalidate];
+
+        for (UIView *subView in _containerView.subviews) {
+            [subView.layer removeAllAnimations];
+        }
+
+        containerLayer.speed = 1.0;
+        containerLayer.timeOffset = 0;
+    });
 }
 
-- (void)pauseInteractiveTransition {
-
+- (void)handleDisplayLink {
+    CFTimeInterval timeOffset = _containerView.layer.timeOffset;
+    timeOffset -= (_completeSpeed / 12);
+    _containerView.layer.timeOffset = timeOffset;
 }
+
+- (void)pauseInteractiveTransition {}
 
 - (void)completeTransition:(BOOL)didComplete {
-    if (didComplete) {
-        UIViewController *fromViewController = [self viewControllerForKey:UITransitionContextFromViewControllerKey];
-        UIViewController *parentViewController = [self viewControllerForKey:FTHTransitionContextParentViewControllerKey];
-        UIViewController *toViewController = [self viewControllerForKey:UITransitionContextToViewControllerKey];
+    UIViewController *fromViewController = [self viewControllerForKey:UITransitionContextFromViewControllerKey];
+    UIViewController *parentViewController = [self viewControllerForKey:FTHTransitionContextParentViewControllerKey];
+    UIViewController *toViewController = [self viewControllerForKey:UITransitionContextToViewControllerKey];
 
+    if (didComplete) {
         if (fromViewController.view) {
             [fromViewController.view removeFromSuperview];
         }
@@ -76,8 +99,19 @@ typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
             [toViewController endAppearanceTransition];
             [fromViewController removeFromParentViewController];
         }
-        // release viewControllerDict
-        self.viewControllerDict = nil;
+    } else {
+        [toViewController beginAppearanceTransition:NO animated:self.animated];
+        [fromViewController beginAppearanceTransition:YES animated:self.animated];
+        [toViewController.view removeFromSuperview];
+        [toViewController endAppearanceTransition];
+        [fromViewController endAppearanceTransition];
+    }
+    // release viewControllerDict
+    self.viewControllerDict = nil;
+
+    if (self.didCompleteTransition) {
+        self.didCompleteTransition(didComplete);
+        self.didCompleteTransition = nil;
     }
 }
 
@@ -99,13 +133,11 @@ typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
 }
 
 - (CGRect)initialFrameForViewController:(UIViewController *)vc {
-    CGRect result;
-    return result;
+    return [UIScreen mainScreen].bounds;
 }
 
 - (CGRect)finalFrameForViewController:(UIViewController *)vc {
-    CGRect result;
-    return result;
+    return [UIScreen mainScreen].bounds;
 }
 
 - (void)pauseLayer:(CALayer *)layer {
@@ -215,6 +247,7 @@ typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
     FTHAnimationDidStopCallback callback = [anim valueForUndefinedKey:@"callback"];
     if (callback) {
         callback(anim, flag);
+        callback = nil;
     }
 }
 @end
@@ -227,8 +260,11 @@ typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
 - (instancetype)initWithAnimator:(id <UIViewControllerAnimatedTransitioning>)animator;
 
 - (void)pauseInteractiveTransition NS_AVAILABLE_IOS(10_0);
+
 - (void)updateInteractiveTransition:(CGFloat)percentComplete;
+
 - (void)finishInteractiveTransition;
+
 - (void)cancelInteractiveTransition;
 @end
 
@@ -264,7 +300,7 @@ typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
 }
 @end
 
-@interface FTHNavigationController () {
+@interface FTHNavigationController () <UIGestureRecognizerDelegate> {
     UIPanGestureRecognizer *_interactiveGestureRecognizer;
     FTHPercentDrivenInteractiveTransition *_percentDrivenInteractiveTransition;
 
@@ -290,8 +326,6 @@ typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
         _viewControllerStack = [NSPointerArray weakObjectsPointerArray];
         [_viewControllerStack addPointer:(__bridge void *) rootViewController];
 #endif
-
-        [rootViewController willMoveToParentViewController:self];
         [self addChildViewController:rootViewController];
     }
     return self;
@@ -310,6 +344,7 @@ typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
     [self addNavigationBarIfNeededByViewController:topViewController];
 
     _interactiveGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handelPanGesture:)];
+    _interactiveGestureRecognizer.delegate = self;
     [self.view addGestureRecognizer:_interactiveGestureRecognizer];
 }
 
@@ -342,6 +377,7 @@ typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
 }
 
 #pragma mark Public Method
+
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated {
     UIViewController *fromViewController = self.topViewController;
     UIViewController *toViewController = viewController;
@@ -350,7 +386,6 @@ typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
     [_viewControllerStack addPointer:(__bridge void *) toViewController];
 #endif
 
-//    [toViewController willMoveToParentViewController:self];
     [self addChildViewController:toViewController];
     UIView *toView = toViewController.view;
     toView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -413,7 +448,10 @@ typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
 
         constraint = @[a, b, c];
     } else {
-
+        NSLayoutConstraint *a = [NSLayoutConstraint constraintWithItem:navigationBar attribute:NSLayoutAttributeLeading relatedBy:NSLayoutRelationEqual toItem:viewController.view attribute:NSLayoutAttributeLeading multiplier:1 constant:0];
+        NSLayoutConstraint *b = [NSLayoutConstraint constraintWithItem:navigationBar attribute:NSLayoutAttributeTrailing relatedBy:NSLayoutRelationEqual toItem:viewController.view attribute:NSLayoutAttributeTrailing multiplier:1 constant:0];
+        NSLayoutConstraint *c = [NSLayoutConstraint constraintWithItem:navigationBar attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:viewController.view attribute:NSLayoutAttributeTop multiplier:1 constant:CGRectGetHeight([UIApplication sharedApplication].statusBarFrame)];
+        constraint = @[a, b, c];
     }
     [NSLayoutConstraint activateConstraints:constraint];
 }
@@ -424,6 +462,8 @@ typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
         return toViewController;
     }
     UIViewController *fromViewController = self.topViewController;
+
+    [fromViewController willMoveToParentViewController:nil];
 
     [toViewController beginAppearanceTransition:YES animated:animated];
     [fromViewController beginAppearanceTransition:NO animated:animated];
@@ -453,6 +493,14 @@ typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
         [self.delegate navigationController:self willShowViewController:toViewController animated:animated];
     }
 
+    if (_delegateFlags.didShowViewController) {
+        transitionContext.didCompleteTransition = ^(BOOL transitionWasCancelled) {
+            if (!transitionWasCancelled) {
+                [self.delegate navigationController:self didShowViewController:toViewController animated:animated];
+            }
+        };
+    }
+
     if (_delegateFlags.animationControllerForOperation) {
         id <UIViewControllerAnimatedTransitioning> animator = [self.delegate navigationController:self
                                                                   animationControllerForOperation:operation
@@ -465,7 +513,6 @@ typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
         } else {
             [animator animateTransition:transitionContext];
         }
-#warning TODO: 增加一个callback, 触发didShowViewController
     } else {
         if (interactive) {
             FTHViewControllerAnimatedTransitioning *animator = [[FTHViewControllerAnimatedTransitioning alloc] initWithOperation:operation];
@@ -482,6 +529,14 @@ typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
 
 #pragma mark -
 
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
+    return YES;
+}
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldBeRequiredToFailByGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
+    return NO;
+}
+
 - (void)handelPanGesture:(UIPanGestureRecognizer *)recognizer {
     CGFloat translate = [recognizer translationInView:self.view].x;
     CGFloat percent = translate / CGRectGetWidth(self.view.bounds);
@@ -495,13 +550,13 @@ typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
             [_percentDrivenInteractiveTransition updateInteractiveTransition:percent];
             break;
         case UIGestureRecognizerStateEnded:
-            [_percentDrivenInteractiveTransition finishInteractiveTransition];
+            if (percent > 0.15f) {
+                [_percentDrivenInteractiveTransition finishInteractiveTransition];
+            } else {
+                [_percentDrivenInteractiveTransition cancelInteractiveTransition];
+            }
             break;
-        case UIGestureRecognizerStateCancelled:
-            break;
-        case UIGestureRecognizerStatePossible:
-            break;
-        case UIGestureRecognizerStateFailed:
+        default:
             break;
     }
 }
@@ -520,7 +575,6 @@ typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
 }
 
 @end
@@ -535,12 +589,95 @@ typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
 }
 @end
 
-@interface FTHNavigationBarInternal : UINavigationBar
+@interface FTHNavigationBarDelegateProxy: NSObject <UINavigationBarDelegate> {
+    struct {
+        unsigned int shouldPushItem:1;
+        unsigned int didPushItem:1;
+        unsigned int shouldPopItem:1;
+        unsigned int didPopItem:1;
+        unsigned int positionForBar:1;
+    } _delegateFlags;
+}
+@property(nonatomic, weak) id<UINavigationBarDelegate> delegate;
+@end
+@implementation FTHNavigationBarDelegateProxy
+- (void)setDelegate:(id <UINavigationBarDelegate>)delegate {
+    if (delegate) {
+        _delegate = delegate;
+
+        _delegateFlags.shouldPopItem = [_delegate respondsToSelector:@selector(navigationBar:shouldPopItem:)];
+        _delegateFlags.didPopItem = [_delegate respondsToSelector:@selector(navigationBar:didPopItem:)];
+        _delegateFlags.didPushItem = [_delegate respondsToSelector:@selector(navigationBar:didPushItem:)];
+        _delegateFlags.shouldPushItem = [_delegate respondsToSelector:@selector(navigationBar:shouldPushItem:)];
+        _delegateFlags.positionForBar = [_delegate respondsToSelector:@selector(positionForBar:)];
+    } else {
+        _delegate = nil;
+        memset(&_delegateFlags, 0, sizeof(_delegateFlags));
+    }
+}
+
+- (BOOL)navigationBar:(UINavigationBar *)navigationBar shouldPushItem:(UINavigationItem *)item {
+    if (_delegateFlags.shouldPushItem) {
+        return [_delegate navigationBar:navigationBar shouldPushItem:item];
+    }
+    return YES;
+}
+
+- (void)navigationBar:(UINavigationBar *)navigationBar didPushItem:(UINavigationItem *)item {
+    if (_delegateFlags.didPushItem) {
+        [_delegate navigationBar:navigationBar didPushItem:item];
+    }
+}
+
+- (BOOL)navigationBar:(UINavigationBar *)navigationBar shouldPopItem:(UINavigationItem *)item {
+    if (_delegateFlags.shouldPopItem) {
+        [_delegate navigationBar:navigationBar shouldPopItem:item];
+    }
+    return YES;
+}
+
+- (void)navigationBar:(UINavigationBar *)navigationBar didPopItem:(UINavigationItem *)item {
+    if (_delegateFlags.didPopItem) {
+        [_delegate navigationBar:navigationBar didPopItem:item];
+    }
+}
+
+- (UIBarPosition)positionForBar:(id <UIBarPositioning>)bar {
+    if (_delegateFlags.positionForBar) {
+        return [_delegate positionForBar:bar];
+    }
+    return UIBarPositionTopAttached;
+}
+@end
+
+@interface FTHNavigationBarInternal : UINavigationBar <UINavigationBarDelegate>
 @end
 
 @implementation FTHNavigationBarInternal
+- (instancetype)initWithFrame:(CGRect)frame {
+    self = [super initWithFrame:frame];
+    if (self) {
+        self.delegate = self;
+    }
+    return self;
+}
+
+- (void)setDelegate:(id <UINavigationBarDelegate>)delegate {
+    if (delegate) {
+        FTHNavigationBarDelegateProxy *delegateProxy = [[FTHNavigationBarDelegateProxy alloc] init];
+        delegateProxy.delegate = delegate;
+
+        objc_setAssociatedObject(self, _cmd, delegateProxy, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+
+        [super setDelegate:delegateProxy];
+    } else {
+        [super setDelegate:nil];
+        objc_setAssociatedObject(self, _cmd, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    }
+}
+
 - (UIBarPosition)barPosition {
-    return UIBarPositionTopAttached;
+    return UIBarPositionTop;
 }
 @end
 
@@ -549,13 +686,14 @@ typedef void (^FTHAnimationDidStopCallback)(CAAnimation *anim, BOOL finished);
     UINavigationBar *navigationBar = objc_getAssociatedObject(self, _cmd);
     if (!navigationBar) {
         // iOS 11
-        if ([NSProcessInfo.processInfo isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion) {11, 0, 0}]) {
-            navigationBar = [[FTHNavigationBarInternal alloc]
+//        if ([NSProcessInfo.processInfo isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion) {11, 0, 0}]) {
+//            navigationBar = [[FTHNavigationBarInternal alloc]
+//                    initWithFrame:CGRectZero];
+//        } else {
+//            navigationBar = [[UINavigationBar alloc] initWithFrame:CGRectZero];
+//        }
+        navigationBar = [[FTHNavigationBarInternal alloc]
                     initWithFrame:CGRectZero];
-        } else {
-            navigationBar = [[UINavigationBar alloc] initWithFrame:CGRectZero];
-        }
-
         objc_setAssociatedObject(self, _cmd, navigationBar, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
     return navigationBar;
