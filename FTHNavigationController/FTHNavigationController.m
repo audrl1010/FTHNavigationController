@@ -134,11 +134,11 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
 }
 
 - (CGRect)initialFrameForViewController:(UIViewController *)vc {
-    return [UIScreen mainScreen].bounds;
+    return vc.parentViewController.view.bounds;
 }
 
 - (CGRect)finalFrameForViewController:(UIViewController *)vc {
-    return [UIScreen mainScreen].bounds;
+    return vc.parentViewController.view.bounds;
 }
 
 - (void)pauseLayer:(CALayer *)layer {
@@ -190,6 +190,8 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
     UIView *toView = [transitionContext viewForKey:UITransitionContextToViewKey];
     UIView *fromView = [transitionContext viewForKey:UITransitionContextFromViewKey];
     
+    toView.frame = [transitionContext finalFrameForViewController:[transitionContext viewControllerForKey:UITransitionContextToViewControllerKey]];
+    
     CABasicAnimation *toAnimation = [CABasicAnimation animationWithKeyPath:@"position.x"];
     toAnimation.delegate = self;
     toAnimation.duration = [self transitionDuration:transitionContext];
@@ -217,6 +219,8 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
 - (void)_popAnimateTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
     UIView *toView = [transitionContext viewForKey:UITransitionContextToViewKey];
     UIView *fromView = [transitionContext viewForKey:UITransitionContextFromViewKey];
+    
+    toView.frame = [transitionContext finalFrameForViewController:[transitionContext viewControllerForKey:UITransitionContextToViewControllerKey]];
     
     CABasicAnimation *fromAnimation = [CABasicAnimation animationWithKeyPath:@"position.x"];
     fromAnimation.delegate = self;
@@ -317,7 +321,6 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
 @end
 
 @implementation FTHNavigationController
-
 - (instancetype)initWithRootViewController:(UIViewController *)rootViewController {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
@@ -462,13 +465,20 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
         if ([firstView isKindOfClass:[UIScrollView class]]) {
             UIEdgeInsets contentInset = firstView.contentInset;
             CGPoint contentOffset = firstView.contentOffset;
+            
+            CGFloat constant = 0;
             if (@available(iOS 11.0, *)) {
-                contentInset.top += navigationBar.intrinsicContentSize.height;
-                contentOffset.y -= navigationBar.intrinsicContentSize.height;
+                constant = navigationBar.intrinsicContentSize.height;
             } else {
-                contentInset.top += 64;
-                contentOffset.y -= 64;
+                constant = navigationBar.intrinsicContentSize.height + CGRectGetHeight([UIApplication sharedApplication].statusBarFrame);
+                if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+                    if (self.presentingViewController && self.modalPresentationStyle == UIModalPresentationFormSheet) {
+                        constant = navigationBar.intrinsicContentSize.height;
+                    }
+                }
             }
+            contentInset.top += constant;
+            contentOffset.y -= constant;
             [firstView setScrollIndicatorInsets:contentInset];
             [firstView setContentInset:contentInset];
             [firstView setContentOffset:contentOffset animated:NO];
@@ -487,9 +497,16 @@ typedef void (^FTHContextTransitioningDidCompleteTransition)(BOOL transitionWasC
         
         constraint = @[a, b, c];
     } else {
-        NSLayoutConstraint *a = [NSLayoutConstraint constraintWithItem:navigationBar attribute:NSLayoutAttributeLeading relatedBy:NSLayoutRelationEqual toItem:viewController.view attribute:NSLayoutAttributeLeading multiplier:1 constant:0];
-        NSLayoutConstraint *b = [NSLayoutConstraint constraintWithItem:navigationBar attribute:NSLayoutAttributeTrailing relatedBy:NSLayoutRelationEqual toItem:viewController.view attribute:NSLayoutAttributeTrailing multiplier:1 constant:0];
-        NSLayoutConstraint *c = [NSLayoutConstraint constraintWithItem:navigationBar attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:viewController.view attribute:NSLayoutAttributeTop multiplier:1 constant:CGRectGetHeight([UIApplication sharedApplication].statusBarFrame)];
+        NSLayoutConstraint *a = [NSLayoutConstraint constraintWithItem:navigationBar attribute:NSLayoutAttributeLeft relatedBy:NSLayoutRelationEqual toItem:viewController.view attribute:NSLayoutAttributeLeft multiplier:1 constant:0];
+        NSLayoutConstraint *b = [NSLayoutConstraint constraintWithItem:navigationBar attribute:NSLayoutAttributeRight relatedBy:NSLayoutRelationEqual toItem:viewController.view attribute:NSLayoutAttributeRight multiplier:1 constant:0];
+        CGFloat constant = 0;
+        constant = CGRectGetHeight([UIApplication sharedApplication].statusBarFrame);
+        if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+            if (self.presentingViewController && self.modalPresentationStyle == UIModalPresentationFormSheet) {
+                constant = 0;
+            }
+        }
+        NSLayoutConstraint *c = [NSLayoutConstraint constraintWithItem:navigationBar attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:viewController.view attribute:NSLayoutAttributeTop multiplier:1 constant:constant];
         constraint = @[a, b, c];
     }
     [NSLayoutConstraint activateConstraints:constraint];
